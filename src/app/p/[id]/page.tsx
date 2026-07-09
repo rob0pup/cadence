@@ -33,6 +33,8 @@ async function PlaylistView({ id }: { id: string }) {
           songs={playlist.songs}
           likedIds={likedIds}
           playlists={playlists}
+          reorderable
+          playlistId={playlist.id}
         />
       </ScrollArea>
     </>

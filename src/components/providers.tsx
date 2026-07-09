@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -20,6 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider>{children}</TooltipProvider>
       </NuqsAdapter>
       <Toaster position="top-center" />
+      <KeyboardShortcuts />
     </ThemeProvider>
   );
 }

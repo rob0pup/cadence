@@ -9,6 +9,7 @@ import { usePlayback } from "@/app/playback-context";
 import {
   addSongToPlaylistAction,
   recordPlayAction,
+  reorderPlaylistAction,
   toggleLikeAction,
 } from "@/app/actions";
 import { Button } from "@/components/ui/button";
@@ -53,23 +54,48 @@ export function TrackList({
   likedIds = [],
   playlists = [],
   query,
+  reorderable = false,
+  playlistId,
 }: {
   songs: Song[];
   likedIds?: string[];
   playlists?: Playlist[];
   query?: string;
+  reorderable?: boolean;
+  playlistId?: string;
 }) {
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayback();
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
+  const [ordered, setOrdered] = React.useState<Song[]>(songs);
+  const dragIndex = React.useRef<number | null>(null);
 
   React.useEffect(() => setLiked(new Set(likedIds)), [likedIds]);
+  React.useEffect(() => setOrdered(songs), [songs]);
+
+  const list = reorderable ? ordered : songs;
 
   function onPlay(song: Song) {
     if (currentTrack?.id === song.id) {
       togglePlayPause();
     } else {
-      playTrack(song, songs);
+      playTrack(song, list);
       void recordPlayAction(song.id);
+    }
+  }
+
+  function onDrop(toIndex: number) {
+    const from = dragIndex.current;
+    dragIndex.current = null;
+    if (from === null || from === toIndex) return;
+    const next = [...ordered];
+    const [moved] = next.splice(from, 1);
+    next.splice(toIndex, 0, moved);
+    setOrdered(next);
+    if (playlistId) {
+      void reorderPlaylistAction(
+        playlistId,
+        next.map((s) => s.id),
+      );
     }
   }
 
@@ -83,7 +109,7 @@ export function TrackList({
     void toggleLikeAction(song.id);
   }
 
-  if (songs.length === 0) {
+  if (list.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
         {query ? `no results for "${query}"` : "no tracks yet"}
@@ -104,16 +130,25 @@ export function TrackList({
         </tr>
       </thead>
       <tbody>
-        {songs.map((song, index) => {
+        {list.map((song, index) => {
           const isCurrent = currentTrack?.id === song.id;
           const isLiked = liked.has(song.id);
           return (
             <tr
               key={song.id}
+              draggable={reorderable}
+              onDragStart={() => {
+                dragIndex.current = index;
+              }}
+              onDragOver={(e) => {
+                if (reorderable) e.preventDefault();
+              }}
+              onDrop={() => onDrop(index)}
               onDoubleClick={() => onPlay(song)}
               className={cn(
                 "group cursor-default border-b border-line/60 hover:bg-muted/50",
                 isCurrent && "bg-muted/60",
+                reorderable && "cursor-grab active:cursor-grabbing",
               )}
             >
               <td className="py-1.5 pr-2 pl-4 text-center tabular-nums text-muted-foreground">

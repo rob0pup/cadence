@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 
+import { NowPlaying } from "@/app/now-playing";
+import { CommandMenu } from "@/components/command-menu";
 import { PlaybackControls } from "@/app/playback-controls";
 import { PlaybackProvider } from "@/app/playback-context";
 import { Sidebar } from "@/app/sidebar";
@@ -44,9 +46,11 @@ export default function RootLayout({
                 <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
                   {children}
                 </main>
+                <NowPlaying />
               </div>
               <PlaybackControls />
             </div>
+            <CommandMenu />
           </PlaybackProvider>
         </Providers>
       </body>

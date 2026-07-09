@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { TrackList } from "@/app/track-list";
+import { UploadButton } from "@/app/upload-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   getAllPlaylists,
@@ -36,10 +37,11 @@ export default async function Page({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="screen-line-bottom flex h-14 items-center px-6">
+      <header className="screen-line-bottom flex h-14 items-center justify-between px-6">
         <h1 className="text-lg font-medium tracking-tight">
           {q ? `search: ${q}` : "all tracks"}
         </h1>
+        <UploadButton />
       </header>
       <ScrollArea className="min-h-0 flex-1">
         <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">loading…</div>}>

@@ -24,6 +24,7 @@ type PlaybackContextType = {
   toggleMute: () => void;
   toggleShuffle: () => void;
   cycleRepeat: () => void;
+  patchCurrentTrack: (patch: Partial<Song>) => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -219,6 +220,10 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     });
   }, [persist]);
 
+  const patchCurrentTrack = React.useCallback((patch: Partial<Song>) => {
+    setCurrentTrack((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
   // Wire the audio element events.
   React.useEffect(() => {
     const audio = audioRef.current;
@@ -305,6 +310,7 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     toggleMute,
     toggleShuffle,
     cycleRepeat,
+    patchCurrentTrack,
   };
 
   return (

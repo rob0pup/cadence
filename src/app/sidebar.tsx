@@ -1,4 +1,4 @@
-import { Heart, Music2 } from "lucide-react";
+import { Clock, Heart, Music2 } from "lucide-react";
 import Link from "next/link";
 
 import { PlaylistNav } from "@/app/playlist-nav";
@@ -46,6 +46,13 @@ export async function Sidebar() {
         >
           <Heart className="size-3.5" />
           liked songs
+        </Link>
+        <Link
+          href="/recent"
+          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Clock className="size-3.5" />
+          recently played
         </Link>
       </nav>
 
