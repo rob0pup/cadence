@@ -9,7 +9,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllPlaylists } from "@/lib/queries";
 import type { Playlist } from "@/lib/types";
 
-export async function Sidebar() {
+const NAV = [
+  { href: "/", label: "all tracks", icon: Music2 },
+  { href: "/liked", label: "liked songs", icon: Heart },
+  { href: "/recent", label: "recently played", icon: Clock },
+  { href: "/albums", label: "albums", icon: Disc3 },
+  { href: "/artists", label: "artists", icon: Mic2 },
+];
+
+/** The sidebar contents, reused by both the desktop rail and the mobile drawer. */
+export async function SidebarInner() {
   let playlists: Playlist[] = [];
   let failed = false;
   try {
@@ -20,7 +29,7 @@ export async function Sidebar() {
   }
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
+    <div className="flex h-full flex-col bg-sidebar">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-mono font-medium">
           <LogoMark className="h-4 w-[1.1rem]" />
@@ -34,41 +43,16 @@ export async function Sidebar() {
       </div>
 
       <nav className="flex flex-col px-3">
-        <Link
-          href="/"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <Music2 className="size-3.5" />
-          all tracks
-        </Link>
-        <Link
-          href="/liked"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <Heart className="size-3.5" />
-          liked songs
-        </Link>
-        <Link
-          href="/recent"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <Clock className="size-3.5" />
-          recently played
-        </Link>
-        <Link
-          href="/albums"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <Disc3 className="size-3.5" />
-          albums
-        </Link>
-        <Link
-          href="/artists"
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <Mic2 className="size-3.5" />
-          artists
-        </Link>
+        {NAV.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Icon className="size-3.5" />
+            {label}
+          </Link>
+        ))}
       </nav>
 
       <div className="screen-line-top mx-3 mt-2" />
@@ -82,6 +66,14 @@ export async function Sidebar() {
           <PlaylistNav playlists={playlists} />
         )}
       </ScrollArea>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden w-60 shrink-0 border-r md:block">
+      <SidebarInner />
     </aside>
   );
 }

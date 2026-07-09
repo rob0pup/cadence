@@ -1,3 +1,4 @@
+import { Music2 } from "lucide-react";
 import { Suspense } from "react";
 
 import { TrackList } from "@/app/track-list";
@@ -18,6 +19,27 @@ async function Tracks({ q }: { q: string }) {
     getLikedSongIds(),
     getAllPlaylists(),
   ]);
+
+  if (!q && songs.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
+        <div className="grid size-14 place-items-center rounded-full bg-muted text-muted-foreground">
+          <Music2 className="size-6" />
+        </div>
+        <div>
+          <h2 className="text-lg font-medium tracking-tight">
+            your library is empty
+          </h2>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            import a few mp3s to get started. cadence reads the title, artist,
+            album, and cover art from each file.
+          </p>
+        </div>
+        <UploadButton />
+      </div>
+    );
+  }
+
   return (
     <TrackList
       songs={songs}
