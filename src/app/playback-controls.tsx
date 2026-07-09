@@ -2,6 +2,7 @@
 
 import {
   Heart,
+  ListMusic,
   Pause,
   Play,
   Repeat,
@@ -106,6 +107,8 @@ export function PlaybackControls() {
     toggleMute,
     toggleShuffle,
     cycleRepeat,
+    queueOpen,
+    toggleQueue,
   } = usePlayback();
 
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
@@ -276,6 +279,16 @@ export function PlaybackControls() {
       </div>
 
       <div className="flex w-1/4 items-center justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="queue"
+          aria-pressed={queueOpen}
+          onClick={toggleQueue}
+          className={cn(queueOpen && "text-link")}
+        >
+          <ListMusic className="size-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon-sm"

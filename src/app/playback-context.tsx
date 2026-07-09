@@ -25,6 +25,8 @@ type PlaybackContextType = {
   toggleShuffle: () => void;
   cycleRepeat: () => void;
   patchCurrentTrack: (patch: Partial<Song>) => void;
+  queueOpen: boolean;
+  toggleQueue: () => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -82,6 +84,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
   const [repeat, setRepeat] = React.useState<RepeatMode>("off");
   const [baseQueue, setBaseQueue] = React.useState<Song[]>([]);
   const [queue, setQueue] = React.useState<Song[]>([]);
+  const [queueOpen, setQueueOpen] = React.useState(false);
+  const toggleQueue = React.useCallback(() => setQueueOpen((o) => !o), []);
 
   // Restore persisted settings + last track (paused) on mount.
   React.useEffect(() => {
@@ -311,6 +315,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     toggleShuffle,
     cycleRepeat,
     patchCurrentTrack,
+    queueOpen,
+    toggleQueue,
   };
 
   return (

@@ -7,6 +7,7 @@ import { NowPlaying } from "@/app/now-playing";
 import { CommandMenu } from "@/components/command-menu";
 import { PlaybackControls } from "@/app/playback-controls";
 import { PlaybackProvider } from "@/app/playback-context";
+import { QueuePanel } from "@/app/queue-panel";
 import { Sidebar } from "@/app/sidebar";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
@@ -50,6 +51,7 @@ export default function RootLayout({
               </div>
               <PlaybackControls />
             </div>
+            <QueuePanel />
             <CommandMenu />
           </PlaybackProvider>
         </Providers>
