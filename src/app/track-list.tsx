@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
+import { Heart, MoreHorizontal, Pause, Play, Shuffle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
@@ -74,7 +74,8 @@ export function TrackList({
   reorderable?: boolean;
   playlistId?: string;
 }) {
-  const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayback();
+  const { currentTrack, isPlaying, playTrack, playAll, togglePlayPause } =
+    usePlayback();
   const router = useRouter();
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
   const [ordered, setOrdered] = React.useState<Song[]>(songs);
@@ -129,8 +130,19 @@ export function TrackList({
   }
 
   return (
-    <table className="w-full text-sm">
-      <thead className="screen-line-bottom sticky top-0 z-10 bg-background/80 backdrop-blur">
+    <div>
+      <div className="flex items-center gap-2 px-4 py-3">
+        <Button size="sm" onClick={() => playAll(list)}>
+          <Play className="size-4 fill-current" />
+          play
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => playAll(list, true)}>
+          <Shuffle className="size-4" />
+          shuffle
+        </Button>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="screen-line-bottom sticky top-0 z-10 bg-background/80 backdrop-blur">
         <tr className="text-left text-xs text-muted-foreground">
           <th className="w-10 py-2 pr-2 pl-4 font-medium">#</th>
           <th className="py-2 px-2 font-medium">title</th>
@@ -292,6 +304,7 @@ export function TrackList({
           );
         })}
       </tbody>
-    </table>
+      </table>
+    </div>
   );
 }
