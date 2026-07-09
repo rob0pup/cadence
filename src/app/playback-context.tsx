@@ -16,6 +16,7 @@ type PlaybackContextType = {
   queue: Song[];
   audioRef: React.RefObject<HTMLAudioElement | null>;
   playTrack: (track: Song, queue?: Song[]) => void;
+  playAll: (songs: Song[], shuffled?: boolean) => void;
   togglePlayPause: () => void;
   playNextTrack: () => void;
   playPreviousTrack: () => void;
@@ -167,6 +168,26 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
       persist({ track, position: 0 });
     },
     [shuffle, persist],
+  );
+
+  const playAll = React.useCallback(
+    (songs: Song[], shuffled = false) => {
+      if (songs.length === 0) return;
+      const order = shuffled ? shuffleArray(songs) : songs;
+      setShuffle(shuffled);
+      setBaseQueue(songs);
+      setQueue(order);
+      const first = order[0];
+      setCurrentTrack(first);
+      setCurrentTime(0);
+      setIsPlaying(true);
+      if (audioRef.current) {
+        audioRef.current.src = getAudioSrc(first.audioUrl);
+        void audioRef.current.play();
+      }
+      persist({ track: first, position: 0, shuffle: shuffled });
+    },
+    [persist],
   );
 
   const togglePlayPause = React.useCallback(() => {
@@ -327,6 +348,7 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     queue,
     audioRef,
     playTrack,
+    playAll,
     togglePlayPause,
     playNextTrack,
     playPreviousTrack,
