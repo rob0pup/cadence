@@ -54,6 +54,16 @@ pnpm dev
 
 open http://localhost:3000.
 
+## deploying to vercel
+
+1. push the repo and import it in vercel.
+2. set env vars in the vercel project:
+   - `DATABASE_URL` your postgres connection string (neon, supabase, or vercel postgres)
+   - `BLOB_READ_WRITE_TOKEN` a vercel blob token, needed so the in-app import can store uploaded audio and cover art (without it, import writes to the local `tracks/` folder, which only works in dev)
+3. run `pnpm db:push` once against the production database to create the schema.
+
+pages that read the database render on demand, so nothing is prerendered against the db at build time.
+
 ## scripts
 
 - `pnpm dev` start the dev server

@@ -10,6 +10,7 @@ import {
   Shuffle,
   SkipBack,
   SkipForward,
+  Timer,
   Volume1,
   Volume2,
   VolumeX,
@@ -20,6 +21,14 @@ import { toggleLikeAction } from "@/app/actions";
 import { usePlayback } from "@/app/playback-context";
 import { CoverArt } from "@/components/cover-art";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn, formatDuration } from "@/lib/utils";
 
 function Scrubber({
@@ -109,6 +118,8 @@ export function PlaybackControls() {
     cycleRepeat,
     queueOpen,
     toggleQueue,
+    sleepUntil,
+    setSleepTimer,
   } = usePlayback();
 
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
@@ -279,6 +290,34 @@ export function PlaybackControls() {
       </div>
 
       <div className="flex w-1/4 items-center justify-end gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="sleep timer"
+              className={cn(sleepUntil && "text-link")}
+            >
+              <Timer className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>sleep timer</DropdownMenuLabel>
+            {[15, 30, 45, 60].map((m) => (
+              <DropdownMenuItem key={m} onSelect={() => setSleepTimer(m)}>
+                {m} minutes
+              </DropdownMenuItem>
+            ))}
+            {sleepUntil && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setSleepTimer(null)}>
+                  turn off
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           size="icon-sm"
