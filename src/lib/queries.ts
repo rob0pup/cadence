@@ -97,6 +97,78 @@ export const getPlaylistWithSongs = unstable_cache(
   { tags: [TAGS.playlists, TAGS.songs] },
 );
 
+export type GroupSummary = {
+  name: string;
+  subtitle: string;
+  count: number;
+  coverUrl: string | null;
+};
+
+export const getAlbums = unstable_cache(
+  async (): Promise<GroupSummary[]> => {
+    const songs = await prisma.song.findMany({ orderBy: { name: "asc" } });
+    const map = new Map<string, GroupSummary>();
+    for (const s of songs) {
+      if (!s.album) continue;
+      const e = map.get(s.album);
+      if (e) {
+        e.count++;
+        if (!e.coverUrl && s.imageUrl) e.coverUrl = s.imageUrl;
+      } else {
+        map.set(s.album, {
+          name: s.album,
+          subtitle: s.artist,
+          count: 1,
+          coverUrl: s.imageUrl,
+        });
+      }
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  },
+  ["albums"],
+  { tags: [TAGS.songs] },
+);
+
+export const getArtists = unstable_cache(
+  async (): Promise<GroupSummary[]> => {
+    const songs = await prisma.song.findMany({ orderBy: { name: "asc" } });
+    const map = new Map<string, GroupSummary>();
+    for (const s of songs) {
+      const e = map.get(s.artist);
+      if (e) {
+        e.count++;
+        if (!e.coverUrl && s.imageUrl) e.coverUrl = s.imageUrl;
+      } else {
+        map.set(s.artist, {
+          name: s.artist,
+          subtitle: "artist",
+          count: 1,
+          coverUrl: s.imageUrl,
+        });
+      }
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  },
+  ["artists"],
+  { tags: [TAGS.songs] },
+);
+
+export const getAlbumSongs = unstable_cache(
+  async (album: string): Promise<Song[]> => {
+    return prisma.song.findMany({ where: { album }, orderBy: { name: "asc" } });
+  },
+  ["album-songs"],
+  { tags: [TAGS.songs] },
+);
+
+export const getArtistSongs = unstable_cache(
+  async (artist: string): Promise<Song[]> => {
+    return prisma.song.findMany({ where: { artist }, orderBy: { name: "asc" } });
+  },
+  ["artist-songs"],
+  { tags: [TAGS.songs] },
+);
+
 export const getLikedSongIds = unstable_cache(
   async (): Promise<string[]> => {
     const rows = await prisma.likedSong.findMany({ select: { songId: true } });
