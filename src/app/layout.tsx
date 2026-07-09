@@ -8,7 +8,8 @@ import { CommandMenu } from "@/components/command-menu";
 import { PlaybackControls } from "@/app/playback-controls";
 import { PlaybackProvider } from "@/app/playback-context";
 import { QueuePanel } from "@/app/queue-panel";
-import { Sidebar } from "@/app/sidebar";
+import { Sidebar, SidebarInner } from "@/app/sidebar";
+import { MobileMenu } from "@/components/mobile-menu";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,11 @@ export default function RootLayout({
                   <Sidebar />
                 </Suspense>
                 <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+                  <MobileMenu>
+                    <Suspense fallback={null}>
+                      <SidebarInner />
+                    </Suspense>
+                  </MobileMenu>
                   {children}
                 </main>
                 <NowPlaying />
