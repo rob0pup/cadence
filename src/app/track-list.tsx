@@ -1,7 +1,7 @@
 "use client";
 
-import { Heart, Pause, Play, Plus } from "lucide-react";
-import Image from "next/image";
+import { Heart, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -9,10 +9,20 @@ import { usePlayback } from "@/app/playback-context";
 import {
   addSongToPlaylistAction,
   recordPlayAction,
+  removeSongFromPlaylistAction,
   reorderPlaylistAction,
   toggleLikeAction,
 } from "@/app/actions";
+import { CoverArt } from "@/components/cover-art";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Playlist, Song } from "@/lib/types";
 import { cn, formatDuration } from "@/lib/utils";
 
@@ -65,6 +75,7 @@ export function TrackList({
   playlistId?: string;
 }) {
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayback();
+  const router = useRouter();
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
   const [ordered, setOrdered] = React.useState<Song[]>(songs);
   const dragIndex = React.useRef<number | null>(null);
@@ -175,17 +186,12 @@ export function TrackList({
               </td>
               <td className="py-1.5 px-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="relative size-8 shrink-0 overflow-hidden rounded bg-muted">
-                    {song.imageUrl ? (
-                      <Image
-                        src={song.imageUrl}
-                        alt=""
-                        fill
-                        sizes="32px"
-                        className="object-cover"
-                      />
-                    ) : null}
-                  </div>
+                  <CoverArt
+                    url={song.imageUrl}
+                    name={song.name}
+                    sizes="32px"
+                    className="size-8 shrink-0"
+                  />
                   <div className="min-w-0">
                     <div
                       className={cn(
@@ -229,23 +235,57 @@ export function TrackList({
                       )}
                     />
                   </Button>
-                  {playlists.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label="add to playlist"
-                      className="opacity-0 group-hover:opacity-100"
-                      onClick={async () => {
-                        const res = await addSongToPlaylistAction(
-                          playlists[0].id,
-                          song.id,
-                        );
-                        toast(res.message);
-                      }}
-                    >
-                      <Plus className="size-3.5" />
-                    </Button>
-                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="more"
+                        className="opacity-0 group-hover:opacity-100 aria-expanded:opacity-100"
+                      >
+                        <MoreHorizontal className="size-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {playlists.length > 0 && (
+                        <>
+                          <DropdownMenuLabel>add to playlist</DropdownMenuLabel>
+                          {playlists.map((p) => (
+                            <DropdownMenuItem
+                              key={p.id}
+                              onSelect={async () => {
+                                const res = await addSongToPlaylistAction(
+                                  p.id,
+                                  song.id,
+                                );
+                                toast(res.message);
+                              }}
+                            >
+                              {p.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+                      {playlistId && (
+                        <>
+                          {playlists.length > 0 && <DropdownMenuSeparator />}
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onSelect={async () => {
+                              await removeSongFromPlaylistAction(
+                                playlistId,
+                                song.id,
+                              );
+                              router.refresh();
+                            }}
+                          >
+                            <Trash2 />
+                            remove from playlist
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </td>
             </tr>

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PlaylistNav } from "@/app/playlist-nav";
 import { SearchInput } from "@/app/search";
+import { LogoMark } from "@/components/logo-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllPlaylists } from "@/lib/queries";
@@ -22,7 +23,7 @@ export async function Sidebar() {
     <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-mono font-medium">
-          <Music2 className="size-4" />
+          <LogoMark className="h-4 w-[1.1rem]" />
           cadence
         </Link>
         <ThemeToggle />

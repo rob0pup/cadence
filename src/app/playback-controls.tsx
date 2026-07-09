@@ -13,10 +13,11 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import Image from "next/image";
 import * as React from "react";
 
+import { toggleLikeAction } from "@/app/actions";
 import { usePlayback } from "@/app/playback-context";
+import { CoverArt } from "@/components/cover-art";
 import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
 
@@ -107,6 +108,26 @@ export function PlaybackControls() {
     cycleRepeat,
   } = usePlayback();
 
+  const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
+  React.useEffect(() => {
+    fetch("/api/liked")
+      .then((r) => r.json())
+      .then((ids: string[]) => setLikedIds(new Set(ids)))
+      .catch(() => {});
+  }, []);
+  const isLiked = !!currentTrack && likedIds.has(currentTrack.id);
+  function onToggleLike() {
+    if (!currentTrack) return;
+    const id = currentTrack.id;
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    void toggleLikeAction(id);
+  }
+
   // MediaSession: OS media keys, lock screen, bluetooth controls.
   React.useEffect(() => {
     if (!("mediaSession" in navigator) || !currentTrack) return;
@@ -151,17 +172,12 @@ export function PlaybackControls() {
       <div className="flex w-1/4 min-w-0 items-center gap-3">
         {currentTrack && (
           <>
-            <div className="relative size-11 shrink-0 overflow-hidden rounded bg-muted">
-              {currentTrack.imageUrl ? (
-                <Image
-                  src={currentTrack.imageUrl}
-                  alt=""
-                  fill
-                  sizes="44px"
-                  className="object-cover"
-                />
-              ) : null}
-            </div>
+            <CoverArt
+              url={currentTrack.imageUrl}
+              name={currentTrack.name}
+              sizes="44px"
+              className="size-11 shrink-0"
+            />
             <div className="min-w-0">
               <div className="truncate text-sm font-medium">
                 {currentTrack.name}
@@ -170,8 +186,15 @@ export function PlaybackControls() {
                 {currentTrack.artist}
               </div>
             </div>
-            <Button variant="ghost" size="icon-xs" aria-label="like">
-              <Heart className="size-3.5" />
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={isLiked ? "unlike" : "like"}
+              onClick={onToggleLike}
+            >
+              <Heart
+                className={cn("size-3.5", isLiked && "fill-link text-link")}
+              />
             </Button>
           </>
         )}

@@ -1,11 +1,10 @@
 "use client";
 
-import { Music2 } from "lucide-react";
-import Image from "next/image";
 import * as React from "react";
 
 import { updateTrackAction } from "@/app/actions";
 import { usePlayback } from "@/app/playback-context";
+import { CoverArt } from "@/components/cover-art";
 import { Visualizer } from "@/components/visualizer";
 import type { Song } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -90,21 +89,12 @@ export function NowPlaying() {
       </div>
       {currentTrack ? (
         <div className="flex flex-col gap-3 px-4">
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10 dark:ring-border">
-            {currentTrack.imageUrl ? (
-              <Image
-                src={currentTrack.imageUrl}
-                alt=""
-                fill
-                sizes="256px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="grid size-full place-items-center text-muted-foreground">
-                <Music2 className="size-10" />
-              </div>
-            )}
-          </div>
+          <CoverArt
+            url={currentTrack.imageUrl}
+            name={currentTrack.name}
+            sizes="256px"
+            className="aspect-square w-full rounded-lg text-3xl ring-1 ring-foreground/10 dark:ring-border"
+          />
           <Visualizer active={isPlaying} />
           <div className="flex flex-col">
             <Field
