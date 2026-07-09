@@ -27,6 +27,8 @@ type PlaybackContextType = {
   patchCurrentTrack: (patch: Partial<Song>) => void;
   queueOpen: boolean;
   toggleQueue: () => void;
+  sleepUntil: number | null;
+  setSleepTimer: (minutes: number | null) => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -86,6 +88,25 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
   const [queue, setQueue] = React.useState<Song[]>([]);
   const [queueOpen, setQueueOpen] = React.useState(false);
   const toggleQueue = React.useCallback(() => setQueueOpen((o) => !o), []);
+  const [sleepUntil, setSleepUntil] = React.useState<number | null>(null);
+  const sleepTimeoutRef = React.useRef<number | null>(null);
+
+  const setSleepTimer = React.useCallback((minutes: number | null) => {
+    if (sleepTimeoutRef.current) window.clearTimeout(sleepTimeoutRef.current);
+    if (minutes == null) {
+      setSleepUntil(null);
+      sleepTimeoutRef.current = null;
+      return;
+    }
+    const ms = minutes * 60_000;
+    setSleepUntil(Date.now() + ms);
+    sleepTimeoutRef.current = window.setTimeout(() => {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+      setSleepUntil(null);
+      sleepTimeoutRef.current = null;
+    }, ms);
+  }, []);
 
   // Restore persisted settings + last track (paused) on mount.
   React.useEffect(() => {
@@ -317,6 +338,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     patchCurrentTrack,
     queueOpen,
     toggleQueue,
+    sleepUntil,
+    setSleepTimer,
   };
 
   return (
