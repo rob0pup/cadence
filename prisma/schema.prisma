@@ -1,0 +1,99 @@
+// cadence database schema
+// single-user for now, but structured to be auth-ready: adding a `User` model
+// and a nullable `userId` to Playlist / LikedSong / PlayHistory later is additive
+// and does not require reworking these tables.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm(map: "pg_trgm")]
+}
+
+model Song {
+  id       String  @id @default(uuid())
+  name     String
+  artist   String
+  album    String?
+  duration Int // seconds
+  genre    String?
+  bpm      Int?
+  key      String?
+  imageUrl String?
+  audioUrl String
+  isLocal  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playlistSongs PlaylistSong[]
+  likedSong     LikedSong?
+  playHistory   PlayHistory[]
+
+  @@index([name])
+  @@index([artist])
+  @@index([album])
+  @@index([createdAt])
+  // trigram indexes power the fuzzy search (similarity()) query
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "songs_name_trgm")
+  @@index([artist(ops: raw("gin_trgm_ops"))], type: Gin, map: "songs_artist_trgm")
+  @@map("songs")
+}
+
+model Playlist {
+  id       String  @id @default(uuid())
+  name     String
+  coverUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playlistSongs PlaylistSong[]
+
+  @@index([createdAt])
+  @@map("playlists")
+}
+
+model PlaylistSong {
+  id         String   @id @default(uuid())
+  playlistId String
+  songId     String
+  order      Int
+  addedAt    DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  song     Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, songId])
+  @@index([playlistId])
+  @@index([songId])
+  @@index([order])
+  @@map("playlist_songs")
+}
+
+model LikedSong {
+  id      String   @id @default(uuid())
+  songId  String   @unique
+  likedAt DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@map("liked_songs")
+}
+
+model PlayHistory {
+  id       String   @id @default(uuid())
+  songId   String
+  playedAt DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([playedAt])
+  @@index([songId])
+  @@map("play_history")
+}
