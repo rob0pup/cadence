@@ -13,7 +13,7 @@ export function BrowseGrid({
   if (items.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
-        nothing here yet
+        Nothing here yet
       </div>
     );
   }

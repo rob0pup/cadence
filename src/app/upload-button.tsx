@@ -20,10 +20,10 @@ export function UploadButton() {
       const fd = new FormData();
       Array.from(files).forEach((f) => fd.append("files", f));
       const res = await uploadTracksAction(fd);
-      toast.success(`imported ${res.count} track${res.count === 1 ? "" : "s"}`);
+      toast.success(`Imported ${res.count} track${res.count === 1 ? "" : "s"}`);
       router.refresh();
     } catch {
-      toast.error("import failed");
+      toast.error("Import failed");
     } finally {
       setPending(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -51,7 +51,7 @@ export function UploadButton() {
         ) : (
           <Upload className="size-4" />
         )}
-        import
+        Import
       </Button>
     </>
   );

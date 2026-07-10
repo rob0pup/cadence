@@ -35,7 +35,7 @@ export async function addSongToPlaylistAction(
   const existing = await prisma.playlistSong.findUnique({
     where: { playlistId_songId: { playlistId, songId } },
   });
-  if (existing) return { ok: false, message: "already in playlist" };
+  if (existing) return { ok: false, message: "Already in playlist" };
 
   const max = await prisma.playlistSong.aggregate({
     where: { playlistId },
@@ -45,7 +45,7 @@ export async function addSongToPlaylistAction(
     data: { playlistId, songId, order: (max._max.order ?? -1) + 1 },
   });
   revalidateTag(TAGS.playlists, "max");
-  return { ok: true, message: "added to playlist" };
+  return { ok: true, message: "Added to playlist" };
 }
 
 export async function removeSongFromPlaylistAction(

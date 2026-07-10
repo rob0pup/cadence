@@ -141,7 +141,7 @@ export const getArtists = unstable_cache(
       } else {
         map.set(s.artist, {
           name: s.artist,
-          subtitle: "artist",
+          subtitle: "Artist",
           count: 1,
           coverUrl: s.imageUrl,
         });

@@ -85,7 +85,7 @@ export function NowPlaying() {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-l bg-sidebar lg:flex">
       <div className="px-4 py-3 text-sm font-medium text-muted-foreground">
-        now playing
+        Now Playing
       </div>
       {currentTrack ? (
         <div className="flex flex-col gap-3 px-4">
@@ -100,28 +100,28 @@ export function NowPlaying() {
             <Field
               trackId={currentTrack.id}
               field="name"
-              label="title"
+              label="Title"
               value={currentTrack.name}
               onSaved={patchCurrentTrack}
             />
             <Field
               trackId={currentTrack.id}
               field="artist"
-              label="artist"
+              label="Artist"
               value={currentTrack.artist}
               onSaved={patchCurrentTrack}
             />
             <Field
               trackId={currentTrack.id}
               field="album"
-              label="album"
+              label="Album"
               value={currentTrack.album ?? ""}
               onSaved={patchCurrentTrack}
             />
             <Field
               trackId={currentTrack.id}
               field="genre"
-              label="genre"
+              label="Genre"
               value={currentTrack.genre ?? ""}
               onSaved={patchCurrentTrack}
             />
@@ -129,14 +129,14 @@ export function NowPlaying() {
               <Field
                 trackId={currentTrack.id}
                 field="bpm"
-                label="bpm"
+                label="BPM"
                 value={currentTrack.bpm?.toString() ?? ""}
                 onSaved={patchCurrentTrack}
               />
               <Field
                 trackId={currentTrack.id}
                 field="key"
-                label="key"
+                label="Key"
                 value={currentTrack.key ?? ""}
                 onSaved={patchCurrentTrack}
               />
@@ -149,7 +149,7 @@ export function NowPlaying() {
             "flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground",
           )}
         >
-          nothing playing yet
+          Nothing playing yet
         </div>
       )}
     </aside>

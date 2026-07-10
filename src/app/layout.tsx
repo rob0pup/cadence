@@ -15,8 +15,8 @@ import { fontVariables } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "cadence",
-  description: "a music player for your own library",
+  title: "Cadence",
+  description: "A music player for your own library",
 };
 
 export const viewport: Viewport = {

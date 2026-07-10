@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "cadence",
-    short_name: "cadence",
-    description: "a music player for your own library",
+    name: "Cadence",
+    short_name: "Cadence",
+    description: "A music player for your own library",
     start_url: "/",
     display: "standalone",
     background_color: "#09090b",

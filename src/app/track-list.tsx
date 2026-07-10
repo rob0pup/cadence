@@ -124,7 +124,7 @@ export function TrackList({
   if (list.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
-        {query ? `no results for "${query}"` : "no tracks yet"}
+        {query ? `No results for "${query}"` : "No tracks yet"}
       </div>
     );
   }
@@ -134,21 +134,21 @@ export function TrackList({
       <div className="flex items-center gap-2 px-4 py-3">
         <Button size="sm" onClick={() => playAll(list)}>
           <Play className="size-4 fill-current" />
-          play
+          Play
         </Button>
         <Button variant="outline" size="sm" onClick={() => playAll(list, true)}>
           <Shuffle className="size-4" />
-          shuffle
+          Shuffle
         </Button>
       </div>
       <table className="w-full text-sm">
         <thead className="screen-line-bottom sticky top-0 z-10 bg-background/80 backdrop-blur">
         <tr className="text-left text-xs text-muted-foreground">
           <th className="w-10 py-2 pr-2 pl-4 font-medium">#</th>
-          <th className="py-2 px-2 font-medium">title</th>
-          <th className="hidden py-2 px-2 font-medium sm:table-cell">artist</th>
-          <th className="hidden py-2 px-2 font-medium md:table-cell">album</th>
-          <th className="w-16 py-2 px-2 text-right font-medium">time</th>
+          <th className="py-2 px-2 font-medium">Title</th>
+          <th className="hidden py-2 px-2 font-medium sm:table-cell">Artist</th>
+          <th className="hidden py-2 px-2 font-medium md:table-cell">Album</th>
+          <th className="w-16 py-2 px-2 text-right font-medium">Time</th>
           <th className="w-16 py-2 px-2" />
         </tr>
       </thead>
@@ -261,7 +261,7 @@ export function TrackList({
                     <DropdownMenuContent align="end">
                       {playlists.length > 0 && (
                         <>
-                          <DropdownMenuLabel>add to playlist</DropdownMenuLabel>
+                          <DropdownMenuLabel>Add to playlist</DropdownMenuLabel>
                           {playlists.map((p) => (
                             <DropdownMenuItem
                               key={p.id}
@@ -292,7 +292,7 @@ export function TrackList({
                             }}
                           >
                             <Trash2 />
-                            remove from playlist
+                            Remove from playlist
                           </DropdownMenuItem>
                         </>
                       )}

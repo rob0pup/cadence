@@ -20,10 +20,10 @@ export default function Error({
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
       <div>
         <h2 className="text-lg font-medium tracking-tight">
-          this section couldn&apos;t load
+          This section couldn&apos;t load
         </h2>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-          something went wrong reaching the library. your playback keeps running,
+          Something went wrong reaching the library. Your playback keeps running,
           try again in a moment.
         </p>
         {error.digest ? (
@@ -34,7 +34,7 @@ export default function Error({
       </div>
       <Button variant="outline" onClick={reset}>
         <RotateCw className="size-4" />
-        try again
+        Try again
       </Button>
     </div>
   );
