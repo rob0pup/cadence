@@ -8,10 +8,12 @@ import { CommandMenu } from "@/components/command-menu";
 import { PlaybackControls } from "@/app/playback-controls";
 import { PlaybackProvider } from "@/app/playback-context";
 import { QueuePanel } from "@/app/queue-panel";
+import { AuthProvider } from "@/app/hooks/use-auth";
 import { Sidebar, SidebarInner } from "@/app/sidebar";
 import { MobileMenu } from "@/components/mobile-menu";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
+import { getAuthUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -26,11 +28,13 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getAuthUser();
+
   return (
     <html
       lang="en"
@@ -39,6 +43,7 @@ export default function RootLayout({
     >
       <body className="h-[100dvh] overflow-hidden">
         <Providers>
+          <AuthProvider user={user}>
           <PlaybackProvider>
             <div className="flex h-full flex-col">
               <div className="flex min-h-0 flex-1">
@@ -60,6 +65,7 @@ export default function RootLayout({
             <QueuePanel />
             <CommandMenu />
           </PlaybackProvider>
+          </AuthProvider>
         </Providers>
       </body>
     </html>

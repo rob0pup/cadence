@@ -6,15 +6,18 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { uploadTracksAction } from "@/app/actions";
+import { useAuth } from "@/app/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
 export function UploadButton() {
   const router = useRouter();
+  const { ensureSignedIn } = useAuth();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [pending, setPending] = React.useState(false);
 
   async function onFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
+    if (!ensureSignedIn()) return;
     setPending(true);
     try {
       const fd = new FormData();

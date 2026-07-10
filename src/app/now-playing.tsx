@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { updateTrackAction } from "@/app/actions";
+import { useAuth } from "@/app/hooks/use-auth";
 import { usePlayback } from "@/app/playback-context";
 import { CoverArt } from "@/components/cover-art";
 import { Visualizer } from "@/components/visualizer";
@@ -24,6 +25,7 @@ function Field({
   value: string;
   onSaved: (patch: Partial<Song>) => void;
 }) {
+  const { ensureSignedIn } = useAuth();
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState(value);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -37,6 +39,10 @@ function Field({
     setEditing(false);
     const trimmed = draft.trim();
     if (trimmed === value) return;
+    if (!ensureSignedIn()) {
+      setDraft(value);
+      return;
+    }
     if (field === "bpm") {
       const n = Number.parseInt(trimmed, 10);
       if (Number.isNaN(n)) return;

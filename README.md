@@ -58,10 +58,11 @@ Open [localhost:3000](http://localhost:3000).
 
 ## Deploying
 
-Import the repo on [Vercel](https://vercel.com) and set two environment variables:
+Import the repo on [Vercel](https://vercel.com) and set the environment variables:
 
 - `DATABASE_URL`, your Postgres connection string (Neon, Supabase, or Vercel Postgres).
 - `BLOB_READ_WRITE_TOKEN`, a Vercel Blob token so in-app import can store uploads. Without it, import falls back to the local `tracks/` folder, which only works in dev.
+- Auth0 (from the [Auth0 Vercel integration](https://vercel.com/marketplace/auth0), which provisions these): `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET`, and `APP_BASE_URL`. Enable the Google and GitHub connections in the Auth0 dashboard. Signing in is required for library and playlist changes; logged-out visitors get a read-only demo.
 
 Then run `pnpm db:push` once against the production database. Pages that read the database render on demand, so nothing is prerendered against it at build.
 

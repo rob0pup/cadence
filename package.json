@@ -15,6 +15,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^4.25.0",
     "@prisma/client": "^6.19.3",
     "@vercel/blob": "^2.6.1",
     "class-variance-authority": "^0.7.1",
