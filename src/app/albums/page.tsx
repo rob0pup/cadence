@@ -15,7 +15,7 @@ export default function AlbumsPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="screen-line-bottom flex h-14 items-center px-6">
-        <h1 className="text-lg font-medium tracking-tight">albums</h1>
+        <h1 className="text-lg font-medium tracking-tight">Albums</h1>
       </header>
       <ScrollArea className="min-h-0 flex-1">
         <Suspense

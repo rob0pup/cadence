@@ -20,6 +20,7 @@ import * as React from "react";
 import { toggleLikeAction } from "@/app/actions";
 import { usePlayback } from "@/app/playback-context";
 import { CoverArt } from "@/components/cover-art";
+import { HintButton } from "@/components/hint-button";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -200,44 +201,44 @@ export function PlaybackControls() {
                 {currentTrack.artist}
               </div>
             </div>
-            <Button
+            <HintButton
+              label={isLiked ? "Unlike" : "Like"}
               variant="ghost"
               size="icon-xs"
-              aria-label={isLiked ? "unlike" : "like"}
               onClick={onToggleLike}
             >
               <Heart
                 className={cn("size-3.5", isLiked && "fill-link text-link")}
               />
-            </Button>
+            </HintButton>
           </>
         )}
       </div>
 
       <div className="flex flex-1 flex-col items-center gap-1.5">
         <div className="flex items-center gap-1">
-          <Button
+          <HintButton
+            label="Shuffle"
             variant="ghost"
             size="icon-sm"
-            aria-label="shuffle"
             aria-pressed={shuffle}
             onClick={toggleShuffle}
             className={cn(shuffle && "text-link")}
           >
             <Shuffle className="size-4" />
-          </Button>
-          <Button
+          </HintButton>
+          <HintButton
+            label="Previous"
             variant="ghost"
             size="icon-sm"
-            aria-label="previous"
             onClick={playPreviousTrack}
             disabled={!currentTrack}
           >
             <SkipBack className="size-4 fill-current" />
-          </Button>
-          <Button
+          </HintButton>
+          <HintButton
+            label={isPlaying ? "Pause" : "Play"}
             size="icon"
-            aria-label={isPlaying ? "pause" : "play"}
             onClick={togglePlayPause}
             disabled={!currentTrack}
             className="rounded-full"
@@ -247,20 +248,20 @@ export function PlaybackControls() {
             ) : (
               <Play className="size-4 fill-current" />
             )}
-          </Button>
-          <Button
+          </HintButton>
+          <HintButton
+            label="Next"
             variant="ghost"
             size="icon-sm"
-            aria-label="next"
             onClick={playNextTrack}
             disabled={!currentTrack}
           >
             <SkipForward className="size-4 fill-current" />
-          </Button>
-          <Button
+          </HintButton>
+          <HintButton
+            label={`Repeat: ${repeat}`}
             variant="ghost"
             size="icon-sm"
-            aria-label={`repeat: ${repeat}`}
             aria-pressed={repeat !== "off"}
             onClick={cycleRepeat}
             className={cn(repeat !== "off" && "text-link")}
@@ -270,7 +271,7 @@ export function PlaybackControls() {
             ) : (
               <Repeat className="size-4" />
             )}
-          </Button>
+          </HintButton>
         </div>
         <div className="flex w-full max-w-xl items-center gap-2">
           <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">
@@ -295,14 +296,15 @@ export function PlaybackControls() {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="sleep timer"
+              aria-label="Sleep timer"
+              title="Sleep timer"
               className={cn(sleepUntil && "text-link")}
             >
               <Timer className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>sleep timer</DropdownMenuLabel>
+            <DropdownMenuLabel>Sleep timer</DropdownMenuLabel>
             {[15, 30, 45, 60].map((m) => (
               <DropdownMenuItem key={m} onSelect={() => setSleepTimer(m)}>
                 {m} minutes
@@ -312,30 +314,30 @@ export function PlaybackControls() {
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setSleepTimer(null)}>
-                  turn off
+                  Turn off
                 </DropdownMenuItem>
               </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button
+        <HintButton
+          label="Queue"
           variant="ghost"
           size="icon-sm"
-          aria-label="queue"
           aria-pressed={queueOpen}
           onClick={toggleQueue}
           className={cn(queueOpen && "text-link")}
         >
           <ListMusic className="size-4" />
-        </Button>
-        <Button
+        </HintButton>
+        <HintButton
+          label={isMuted ? "Unmute" : "Mute"}
           variant="ghost"
           size="icon-sm"
-          aria-label={isMuted ? "unmute" : "mute"}
           onClick={toggleMute}
         >
           <VolumeIcon className="size-4" />
-        </Button>
+        </HintButton>
         <Scrubber
           className="w-24"
           value={isMuted ? 0 : volume}

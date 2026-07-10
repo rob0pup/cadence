@@ -28,7 +28,7 @@ async function Tracks({ q }: { q: string }) {
         </div>
         <div>
           <h2 className="text-lg font-medium tracking-tight">
-            your library is empty
+            Your library is empty
           </h2>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             import a few mp3s to get started. cadence reads the title, artist,
@@ -61,7 +61,7 @@ export default async function Page({
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="screen-line-bottom flex h-14 items-center justify-between px-6">
         <h1 className="text-lg font-medium tracking-tight">
-          {q ? `search: ${q}` : "all tracks"}
+          {q ? `Search: ${q}` : "All Tracks"}
         </h1>
         <UploadButton />
       </header>

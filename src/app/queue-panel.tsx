@@ -21,7 +21,7 @@ export function QueuePanel() {
   return (
     <aside className="fixed top-0 right-0 bottom-20 z-40 flex w-72 flex-col border-l bg-sidebar shadow-lg">
       <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-sm font-medium">queue</span>
+        <span className="text-sm font-medium">Queue</span>
         <Button
           variant="ghost"
           size="icon-xs"
@@ -36,16 +36,16 @@ export function QueuePanel() {
         {currentTrack && (
           <>
             <p className="px-2 py-1 text-xs text-muted-foreground">
-              now playing
+              Now playing
             </p>
             <Row song={currentTrack} active onPlay={() => {}} />
           </>
         )}
 
-        <p className="px-2 pt-3 pb-1 text-xs text-muted-foreground">next up</p>
+        <p className="px-2 pt-3 pb-1 text-xs text-muted-foreground">Next up</p>
         {upcoming.length === 0 ? (
           <p className="px-2 py-4 text-xs text-muted-foreground">
-            nothing queued
+            Nothing queued
           </p>
         ) : (
           upcoming.map((song) => (

@@ -68,28 +68,28 @@ export function CommandMenu() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder="search songs, jump to a page…"
+        placeholder="Search songs, jump to a page…"
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>no results.</CommandEmpty>
-        <CommandGroup heading="go to">
+        <CommandEmpty>No results.</CommandEmpty>
+        <CommandGroup heading="Go to">
           <CommandItem value="all tracks" onSelect={() => go("/")}>
             <Music2 className="size-4" />
-            all tracks
+            All Tracks
           </CommandItem>
           <CommandItem value="liked songs" onSelect={() => go("/liked")}>
             <Heart className="size-4" />
-            liked songs
+            Liked Songs
           </CommandItem>
           <CommandItem value="recently played" onSelect={() => go("/recent")}>
             <Clock className="size-4" />
-            recently played
+            Recently Played
           </CommandItem>
         </CommandGroup>
         {results.length > 0 && (
-          <CommandGroup heading="songs">
+          <CommandGroup heading="Songs">
             {results.map((song) => (
               <CommandItem
                 key={song.id}

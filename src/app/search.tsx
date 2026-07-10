@@ -27,7 +27,7 @@ export function SearchInput() {
     <div className="relative">
       <Input
         type="search"
-        placeholder="search"
+        placeholder="Search"
         value={value}
         onChange={(e) => setValue(e.currentTarget.value)}
         className="h-8 pr-8 text-xs [&::-webkit-search-cancel-button]:appearance-none"

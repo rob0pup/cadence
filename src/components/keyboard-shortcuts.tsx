@@ -5,10 +5,10 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const SHORTCUTS: [string, string][] = [
-  ["space", "play / pause"],
-  ["/", "focus search"],
-  ["⌘ / ctrl + k", "command menu"],
-  ["?", "this help"],
+  ["space", "Play / pause"],
+  ["/", "Focus search"],
+  ["⌘ / ctrl + k", "Command menu"],
+  ["?", "This help"],
 ];
 
 export function KeyboardShortcuts() {
@@ -34,7 +34,7 @@ export function KeyboardShortcuts() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-5">
-        <DialogTitle>keyboard shortcuts</DialogTitle>
+        <DialogTitle>Keyboard shortcuts</DialogTitle>
         <div className="mt-3 flex flex-col gap-1">
           {SHORTCUTS.map(([key, label]) => (
             <div

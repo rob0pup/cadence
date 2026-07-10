@@ -25,7 +25,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
         </DialogPrimitive.Trigger>
         <div className="flex items-center gap-2 font-mono text-sm font-medium">
           <LogoMark className="h-4 w-[1.1rem]" />
-          cadence
+          Cadence
         </div>
       </div>
 

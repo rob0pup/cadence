@@ -41,7 +41,7 @@ export function PlaylistNav({ playlists }: { playlists: Playlist[] }) {
     <div className="flex flex-col">
       <div className="flex items-center justify-between px-2 py-1.5">
         <span className="text-xs font-medium text-muted-foreground">
-          playlists
+          Playlists
         </span>
         <Button
           variant="ghost"

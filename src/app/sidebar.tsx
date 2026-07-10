@@ -10,11 +10,11 @@ import { getAllPlaylists } from "@/lib/queries";
 import type { Playlist } from "@/lib/types";
 
 const NAV = [
-  { href: "/", label: "all tracks", icon: Music2 },
-  { href: "/liked", label: "liked songs", icon: Heart },
-  { href: "/recent", label: "recently played", icon: Clock },
-  { href: "/albums", label: "albums", icon: Disc3 },
-  { href: "/artists", label: "artists", icon: Mic2 },
+  { href: "/", label: "All Tracks", icon: Music2 },
+  { href: "/liked", label: "Liked Songs", icon: Heart },
+  { href: "/recent", label: "Recently Played", icon: Clock },
+  { href: "/albums", label: "Albums", icon: Disc3 },
+  { href: "/artists", label: "Artists", icon: Mic2 },
 ];
 
 /** The sidebar contents, reused by both the desktop rail and the mobile drawer. */
@@ -33,7 +33,7 @@ export async function SidebarInner() {
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-mono font-medium">
           <LogoMark className="h-4 w-[1.1rem]" />
-          cadence
+          Cadence
         </Link>
         <ThemeToggle />
       </div>
@@ -60,7 +60,7 @@ export async function SidebarInner() {
       <ScrollArea className="flex-1 px-3 py-2">
         {failed ? (
           <p className="px-2 py-4 text-xs text-muted-foreground">
-            couldn&apos;t load playlists
+            Couldn&apos;t load playlists
           </p>
         ) : (
           <PlaylistNav playlists={playlists} />
