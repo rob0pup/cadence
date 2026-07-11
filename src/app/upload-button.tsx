@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { importFromUrlAction, uploadTracksAction } from "@/app/actions";
 import { useAuth } from "@/app/hooks/use-auth";
+import { detectBpm } from "@/lib/bpm";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -30,8 +31,11 @@ export function UploadButton() {
     if (!ensureSignedIn()) return;
     setPending(true);
     try {
+      const list = Array.from(files);
+      const bpms = await Promise.all(list.map(detectBpm));
       const fd = new FormData();
-      Array.from(files).forEach((f) => fd.append("files", f));
+      list.forEach((f) => fd.append("files", f));
+      fd.append("bpms", JSON.stringify(bpms));
       const res = await uploadTracksAction(fd);
       toast.success(`Imported ${res.count} track${res.count === 1 ? "" : "s"}`);
       router.refresh();
