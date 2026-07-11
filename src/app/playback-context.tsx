@@ -33,6 +33,8 @@ type PlaybackContextType = {
   playNext: (song: Song) => void;
   addToQueue: (song: Song) => void;
   removeFromQueue: (songId: string) => void;
+  radioOn: boolean;
+  toggleRadio: () => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -46,6 +48,7 @@ type PersistedState = {
   isMuted: boolean;
   shuffle: boolean;
   repeat: RepeatMode;
+  radioOn: boolean;
   track: Song | null;
   position: number;
 };
@@ -90,6 +93,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
   const [repeat, setRepeat] = React.useState<RepeatMode>("off");
   const [baseQueue, setBaseQueue] = React.useState<Song[]>([]);
   const [queue, setQueue] = React.useState<Song[]>([]);
+  const [radioOn, setRadioOn] = React.useState(false);
+  const toggleRadio = React.useCallback(() => setRadioOn((o) => !o), []);
   const [queueOpen, setQueueOpen] = React.useState(false);
   const toggleQueue = React.useCallback(() => setQueueOpen((o) => !o), []);
   const [sleepUntil, setSleepUntil] = React.useState<number | null>(null);
@@ -119,6 +124,7 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     if (typeof p.isMuted === "boolean") setIsMuted(p.isMuted);
     if (typeof p.shuffle === "boolean") setShuffle(p.shuffle);
     if (p.repeat) setRepeat(p.repeat);
+    if (typeof p.radioOn === "boolean") setRadioOn(p.radioOn);
     if (p.track) {
       setCurrentTrack(p.track);
       setBaseQueue([p.track]);
@@ -141,13 +147,14 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
         isMuted,
         shuffle,
         repeat,
+        radioOn,
         track: currentTrack,
         position: currentTime,
         ...patch,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     },
-    [volume, isMuted, shuffle, repeat, currentTrack, currentTime],
+    [volume, isMuted, shuffle, repeat, radioOn, currentTrack, currentTime],
   );
 
   // Apply volume/mute to the element.
@@ -232,6 +239,25 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     setBaseQueue(remove);
     setQueue(remove);
   }, []);
+
+  // radio: when the queue runs out, pull in related tracks and keep playing
+  const extendRadio = React.useCallback(
+    async (seedId: string) => {
+      try {
+        const res = await fetch(`/api/radio?seed=${seedId}`);
+        const related: Song[] = await res.json();
+        const inQueue = new Set(queue.map((s) => s.id));
+        const fresh = related.filter((s) => !inQueue.has(s.id));
+        if (fresh.length === 0) return;
+        setBaseQueue((q) => [...q, ...fresh]);
+        setQueue((q) => [...q, ...fresh]);
+        playTrack(fresh[0]);
+      } catch {
+        // radio is best-effort
+      }
+    },
+    [queue, playTrack],
+  );
 
   const togglePlayPause = React.useCallback(() => {
     const audio = audioRef.current;
@@ -328,6 +354,11 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
         void audio.play();
         return;
       }
+      const idx = queue.findIndex((t) => t.id === currentTrack?.id);
+      if (radioOn && repeat === "off" && currentTrack && idx === queue.length - 1) {
+        void extendRadio(currentTrack.id);
+        return;
+      }
       playNextTrack();
     };
 
@@ -343,7 +374,7 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [repeat, playNextTrack]);
+  }, [repeat, playNextTrack, queue, currentTrack, radioOn, extendRadio]);
 
   // Persist the play position periodically so we can resume on reload.
   React.useEffect(() => {
@@ -408,6 +439,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     playNext,
     addToQueue,
     removeFromQueue,
+    radioOn,
+    toggleRadio,
   };
 
   return (

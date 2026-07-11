@@ -5,6 +5,7 @@ import {
   ListMusic,
   Pause,
   Play,
+  Radio,
   Repeat,
   Repeat1,
   Shuffle,
@@ -121,6 +122,8 @@ export function PlaybackControls() {
     toggleQueue,
     sleepUntil,
     setSleepTimer,
+    radioOn,
+    toggleRadio,
   } = usePlayback();
 
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
@@ -320,6 +323,16 @@ export function PlaybackControls() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <HintButton
+          label={radioOn ? "Radio on" : "Radio (autoplay)"}
+          variant="ghost"
+          size="icon-sm"
+          aria-pressed={radioOn}
+          onClick={toggleRadio}
+          className={cn(radioOn && "text-link")}
+        >
+          <Radio className="size-4" />
+        </HintButton>
         <HintButton
           label="Queue"
           variant="ghost"
