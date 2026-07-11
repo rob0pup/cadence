@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { SharePlaylist } from "@/app/share-playlist";
 import { TrackList } from "@/app/track-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -22,21 +23,30 @@ async function PlaylistView({ id }: { id: string }) {
   ]);
   if (!playlist) notFound();
 
+  const isOwner = !!userId && playlist.ownerId === userId;
+
   return (
     <>
-      <header className="screen-line-bottom flex h-14 items-center justify-between px-6">
-        <h1 className="text-lg font-medium tracking-tight">{playlist.name}</h1>
-        <span className="text-xs text-muted-foreground">
-          {playlist.trackCount} tracks · {formatDuration(playlist.duration)}
-        </span>
+      <header className="screen-line-bottom flex h-14 items-center justify-between gap-3 px-6">
+        <h1 className="truncate text-lg font-medium tracking-tight">
+          {playlist.name}
+        </h1>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-xs text-muted-foreground">
+            {playlist.trackCount} tracks · {formatDuration(playlist.duration)}
+          </span>
+          {isOwner && (
+            <SharePlaylist id={playlist.id} isPublic={playlist.isPublic} />
+          )}
+        </div>
       </header>
       <ScrollArea className="min-h-0 flex-1">
         <TrackList
           songs={playlist.songs}
           likedIds={likedIds}
           playlists={playlists}
-          reorderable
-          playlistId={playlist.id}
+          reorderable={isOwner}
+          playlistId={isOwner ? playlist.id : undefined}
         />
       </ScrollArea>
     </>

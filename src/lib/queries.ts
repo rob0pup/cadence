@@ -81,7 +81,8 @@ export const getPlaylistWithSongs = unstable_cache(
     userId: string | null,
   ): Promise<PlaylistWithSongs | null> => {
     const playlist = await prisma.playlist.findFirst({
-      where: { id, ...ownerWhere(userId) },
+      // viewable if it's the viewer's own, a demo, or shared publicly
+      where: { id, OR: [ownerWhere(userId), { isPublic: true }] },
       include: {
         playlistSongs: {
           orderBy: { order: "asc" },
@@ -100,6 +101,8 @@ export const getPlaylistWithSongs = unstable_cache(
       songs,
       trackCount: songs.length,
       duration: songs.reduce((t, s) => t + s.duration, 0),
+      isPublic: playlist.isPublic,
+      ownerId: playlist.userId,
     };
   },
   ["playlist-with-songs"],

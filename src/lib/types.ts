@@ -30,6 +30,8 @@ export type PlaylistWithSongs = Playlist & {
   songs: Song[];
   trackCount: number;
   duration: number;
+  isPublic: boolean;
+  ownerId: string | null;
 };
 
 export type RepeatMode = "off" | "all" | "one";

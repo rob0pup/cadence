@@ -37,6 +37,16 @@ export async function deletePlaylistAction(id: string) {
   revalidateTag(TAGS.playlists, "max");
 }
 
+export async function setPlaylistPublicAction(id: string, isPublic: boolean) {
+  const user = await requireUser();
+  await prisma.playlist.updateMany({
+    where: { id, userId: user.id },
+    data: { isPublic },
+  });
+  revalidateTag(TAGS.playlists, "max");
+  return { isPublic };
+}
+
 export async function addSongToPlaylistAction(
   playlistId: string,
   songId: string,
