@@ -286,11 +286,40 @@ export async function importFromUrlAction(rawUrl: string) {
   const direct = normalizeCloudUrl(url);
   let res: Response;
   try {
-    res = await fetch(direct, { redirect: "follow" });
+    res = await fetch(direct, {
+      redirect: "follow",
+      // a browser-like user agent; some hosts reject header-less requests
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        accept: "audio/*,application/octet-stream;q=0.9,*/*;q=0.5",
+      },
+    });
   } catch {
     return { ok: false, message: "Couldn't reach that link" };
   }
-  if (!res.ok) return { ok: false, message: `Fetch failed (${res.status})` };
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      return {
+        ok: false,
+        message:
+          "The site blocked the download. Paste a direct link to the audio file, or download it and use Upload files.",
+      };
+    }
+    if (res.status === 404) {
+      return { ok: false, message: "Nothing found at that link (404)." };
+    }
+    return { ok: false, message: `Couldn't fetch the file (${res.status}).` };
+  }
+
+  const type = res.headers.get("content-type") ?? "";
+  if (type.includes("text/html")) {
+    return {
+      ok: false,
+      message:
+        "That's a web page, not an audio file. Use a direct link to the file (it usually ends in .mp3), or download it and use Upload files.",
+    };
+  }
 
   const declared = Number(res.headers.get("content-length") ?? 0);
   if (declared && declared > MAX_IMPORT_BYTES) {
@@ -304,7 +333,6 @@ export async function importFromUrlAction(rawUrl: string) {
 
   // confirm it is really audio: trust the content type / extension, else sniff
   // the bytes (cloud links often serve octet-stream with no file extension)
-  const type = res.headers.get("content-type") ?? "";
   let isAudio =
     type.startsWith("audio/") ||
     /\.(mp3|m4a|aac|ogg|wav|flac)$/i.test(url.pathname);
@@ -319,7 +347,7 @@ export async function importFromUrlAction(rawUrl: string) {
   if (!isAudio) {
     return {
       ok: false,
-      message: "That doesn't look like an audio file (is the link public?)",
+      message: "That doesn't look like an audio file. Use a direct link to the file.",
     };
   }
 
