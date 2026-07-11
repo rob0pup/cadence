@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Music, Unplug } from "lucide-react";
 
 import { useAuth } from "@/app/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function UserMenu() {
-  const { user } = useAuth();
+  const { user, spotify } = useAuth();
 
   if (!user) {
     return (
@@ -52,6 +52,30 @@ export function UserMenu() {
         <DropdownMenuLabel className="truncate">
           {user.name ?? user.email}
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {spotify ? (
+          <>
+            <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
+              Spotify: {spotify.displayName ?? "connected"}
+              {spotify.product && spotify.product !== "premium"
+                ? " (no premium)"
+                : ""}
+            </DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <a href="/api/spotify/disconnect">
+                <Unplug className="size-3.5" />
+                Disconnect Spotify
+              </a>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <DropdownMenuItem asChild>
+            <a href="/api/spotify/connect">
+              <Music className="size-3.5" />
+              Connect Spotify
+            </a>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <a href="/auth/logout">

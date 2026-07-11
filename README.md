@@ -63,6 +63,7 @@ Import the repo on [Vercel](https://vercel.com) and set the environment variable
 - `DATABASE_URL`, your Postgres connection string (Neon, Supabase, or Vercel Postgres).
 - `BLOB_READ_WRITE_TOKEN`, a Vercel Blob token so in-app import can store uploads. Without it, import falls back to the local `tracks/` folder, which only works in dev.
 - Auth0 (from the [Auth0 Vercel integration](https://vercel.com/marketplace/auth0), which provisions these): `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_SECRET`, and `APP_BASE_URL`. Enable the Google and GitHub connections in the Auth0 dashboard. Signing in is required for library and playlist changes; logged-out visitors get a read-only demo.
+- Spotify (optional, for connecting a Spotify account): `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from a [Spotify developer app](https://developer.spotify.com/dashboard), with `${APP_BASE_URL}/api/spotify/callback` registered as a redirect URI. Full-track playback needs Spotify Premium.
 
 Then run `pnpm db:push` once against the production database. Pages that read the database render on demand, so nothing is prerendered against it at build.
 

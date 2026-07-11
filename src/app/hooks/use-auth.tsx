@@ -5,8 +5,14 @@ import { toast } from "sonner";
 
 import type { AuthUser } from "@/lib/types";
 
+export type SpotifyState = {
+  displayName: string | null;
+  product: string | null;
+} | null;
+
 type AuthContextType = {
   user: AuthUser | null;
+  spotify: SpotifyState;
   /**
    * Returns true if signed in. If not, shows a prompt and sends the visitor to
    * the sign-in page, returning false so the caller can bail out of a write.
@@ -18,9 +24,11 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({
   user,
+  spotify = null,
   children,
 }: {
   user: AuthUser | null;
+  spotify?: SpotifyState;
   children: React.ReactNode;
 }) {
   const ensureSignedIn = React.useCallback(() => {
@@ -39,8 +47,8 @@ export function AuthProvider({
   }, [user]);
 
   const value = React.useMemo(
-    () => ({ user, ensureSignedIn }),
-    [user, ensureSignedIn],
+    () => ({ user, spotify, ensureSignedIn }),
+    [user, spotify, ensureSignedIn],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

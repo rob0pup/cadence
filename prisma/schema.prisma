@@ -23,12 +23,30 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  songs       Song[]
-  playlists   Playlist[]
-  likedSongs  LikedSong[]
-  playHistory PlayHistory[]
+  songs          Song[]
+  playlists      Playlist[]
+  likedSongs     LikedSong[]
+  playHistory    PlayHistory[]
+  spotifyAccount SpotifyAccount?
 
   @@map("users")
+}
+
+model SpotifyAccount {
+  userId       String   @id
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scope        String?
+  spotifyId    String?
+  displayName  String?
+  product      String? // "premium" | "free"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("spotify_accounts")
 }
 
 model Song {

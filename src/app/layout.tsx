@@ -14,6 +14,7 @@ import { MobileMenu } from "@/components/mobile-menu";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
 import { getAuthUser } from "@/lib/session";
+import { getSpotifyStatus } from "@/lib/spotify";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getAuthUser();
+  const spotify = await getSpotifyStatus(user?.id ?? null);
 
   return (
     <html
@@ -43,7 +45,7 @@ export default async function RootLayout({
     >
       <body className="h-[100dvh] overflow-hidden">
         <Providers>
-          <AuthProvider user={user}>
+          <AuthProvider user={user} spotify={spotify}>
           <PlaybackProvider>
             <div className="flex h-full flex-col">
               <div className="flex min-h-0 flex-1">
