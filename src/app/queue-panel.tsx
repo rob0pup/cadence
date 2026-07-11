@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
 
 export function QueuePanel() {
-  const { queueOpen, toggleQueue, queue, currentTrack, playTrack } =
+  const { queueOpen, toggleQueue, queue, currentTrack, playTrack, removeFromQueue } =
     usePlayback();
 
   if (!queueOpen) return null;
@@ -49,7 +49,12 @@ export function QueuePanel() {
           </p>
         ) : (
           upcoming.map((song) => (
-            <Row key={song.id} song={song} onPlay={() => playTrack(song)} />
+            <Row
+              key={song.id}
+              song={song}
+              onPlay={() => playTrack(song)}
+              onRemove={() => removeFromQueue(song.id)}
+            />
           ))
         )}
       </div>
@@ -61,16 +66,24 @@ function Row({
   song,
   active = false,
   onPlay,
+  onRemove,
 }: {
-  song: { id: string; name: string; artist: string; duration: number; imageUrl: string | null };
+  song: {
+    id: string;
+    name: string;
+    artist: string;
+    duration: number;
+    imageUrl: string | null;
+  };
   active?: boolean;
   onPlay: () => void;
+  onRemove?: () => void;
 }) {
   return (
-    <button
+    <div
       onClick={onPlay}
       className={cn(
-        "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-muted",
+        "group flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-muted",
         active && "bg-muted",
       )}
     >
@@ -88,9 +101,22 @@ function Row({
           {song.artist}
         </div>
       </div>
-      <span className="text-xs tabular-nums text-muted-foreground">
-        {formatDuration(song.duration)}
-      </span>
-    </button>
+      {onRemove ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          aria-label="remove from queue"
+          className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
+        >
+          <X className="size-3.5" />
+        </button>
+      ) : (
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {formatDuration(song.duration)}
+        </span>
+      )}
+    </div>
   );
 }
