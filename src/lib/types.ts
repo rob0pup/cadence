@@ -43,6 +43,14 @@ export type GroupSummary = {
   coverUrl: string | null;
 };
 
+export type ListeningStats = {
+  totalPlays: number;
+  uniqueTracks: number;
+  totalMinutes: number;
+  topTracks: { song: Song; count: number }[];
+  topArtists: { name: string; count: number }[];
+};
+
 export type AuthUser = {
   id: string;
   email: string | null;

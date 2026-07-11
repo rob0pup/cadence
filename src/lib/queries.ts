@@ -4,7 +4,12 @@ import { unstable_cache } from "next/cache";
 
 import { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
-import type { GroupSummary, PlaylistWithSongs, Song } from "@/lib/types";
+import type {
+  GroupSummary,
+  ListeningStats,
+  PlaylistWithSongs,
+  Song,
+} from "@/lib/types";
 
 export const TAGS = {
   songs: "songs",
@@ -213,6 +218,47 @@ export const getLikedSongs = unstable_cache(
   },
   ["liked-songs"],
   { tags: [TAGS.likes, TAGS.songs] },
+);
+
+export const getListeningStats = unstable_cache(
+  async (userId: string | null): Promise<ListeningStats | null> => {
+    if (!userId) return null;
+    const plays = await prisma.playHistory.findMany({
+      where: { userId },
+      include: { song: true },
+      orderBy: { playedAt: "desc" },
+      take: 5000,
+    });
+
+    const trackCounts = new Map<string, { song: Song; count: number }>();
+    const artistCounts = new Map<string, number>();
+    let totalSeconds = 0;
+    for (const p of plays) {
+      totalSeconds += p.song.duration;
+      const t = trackCounts.get(p.songId);
+      if (t) t.count++;
+      else trackCounts.set(p.songId, { song: p.song, count: 1 });
+      artistCounts.set(
+        p.song.artist,
+        (artistCounts.get(p.song.artist) ?? 0) + 1,
+      );
+    }
+
+    return {
+      totalPlays: plays.length,
+      uniqueTracks: trackCounts.size,
+      totalMinutes: Math.round(totalSeconds / 60),
+      topTracks: [...trackCounts.values()]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+      topArtists: [...artistCounts.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+    };
+  },
+  ["listening-stats"],
+  { tags: [TAGS.history, TAGS.songs] },
 );
 
 export const getRecentlyPlayed = unstable_cache(
