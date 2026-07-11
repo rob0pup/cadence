@@ -7,15 +7,17 @@ import {
   getAllPlaylists,
   getLikedSongIds,
 } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 import { formatDuration } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 async function AlbumView({ name }: { name: string }) {
+  const userId = await getViewerId();
   const [songs, likedIds, playlists] = await Promise.all([
-    getAlbumSongs(name),
-    getLikedSongIds(),
-    getAllPlaylists(),
+    getAlbumSongs(name, userId),
+    getLikedSongIds(userId),
+    getAllPlaylists(userId),
   ]);
   const total = songs.reduce((t, s) => t + s.duration, 0);
   return (

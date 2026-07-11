@@ -23,6 +23,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  songs       Song[]
+  playlists   Playlist[]
+  likedSongs  LikedSong[]
+  playHistory PlayHistory[]
+
   @@map("users")
 }
 
@@ -38,14 +43,19 @@ model Song {
   imageUrl String?
   audioUrl String
   isLocal  Boolean @default(true)
+  isDemo   Boolean @default(false)
+  userId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   playlistSongs PlaylistSong[]
-  likedSong     LikedSong?
+  likedSongs    LikedSong[]
   playHistory   PlayHistory[]
 
+  @@index([userId])
+  @@index([isDemo])
   @@index([name])
   @@index([artist])
   @@index([album])
@@ -60,12 +70,17 @@ model Playlist {
   id       String  @id @default(uuid())
   name     String
   coverUrl String?
+  isDemo   Boolean @default(false)
+  userId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   playlistSongs PlaylistSong[]
 
+  @@index([userId])
+  @@index([isDemo])
   @@index([createdAt])
   @@map("playlists")
 }
@@ -89,21 +104,29 @@ model PlaylistSong {
 
 model LikedSong {
   id      String   @id @default(uuid())
-  songId  String   @unique
+  userId  String
+  songId  String
   likedAt DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, songId])
+  @@index([userId])
+  @@index([songId])
   @@map("liked_songs")
 }
 
 model PlayHistory {
   id       String   @id @default(uuid())
+  userId   String
   songId   String
   playedAt DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@index([playedAt])
   @@index([songId])
   @@map("play_history")

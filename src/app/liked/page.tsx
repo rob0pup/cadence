@@ -3,13 +3,15 @@ import { Suspense } from "react";
 import { TrackList } from "@/app/track-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllPlaylists, getLikedSongs } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 async function LikedTracks() {
+  const userId = await getViewerId();
   const [songs, playlists] = await Promise.all([
-    getLikedSongs(),
-    getAllPlaylists(),
+    getLikedSongs(userId),
+    getAllPlaylists(userId),
   ]);
   return (
     <TrackList

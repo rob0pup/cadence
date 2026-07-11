@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllPlaylists } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 import type { Playlist } from "@/lib/types";
 
 const NAV = [
@@ -23,7 +24,7 @@ export async function SidebarInner() {
   let playlists: Playlist[] = [];
   let failed = false;
   try {
-    playlists = await getAllPlaylists();
+    playlists = await getAllPlaylists(await getViewerId());
   } catch {
     // keep the shell alive if the database is unreachable
     failed = true;

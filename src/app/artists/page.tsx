@@ -3,11 +3,12 @@ import { Suspense } from "react";
 import { BrowseGrid } from "@/components/browse-grid";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getArtists } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 async function Artists() {
-  const artists = await getArtists();
+  const artists = await getArtists(await getViewerId());
   return <BrowseGrid items={artists} hrefBase="/artist" />;
 }
 

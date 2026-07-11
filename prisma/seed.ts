@@ -38,6 +38,7 @@ async function main() {
         imageUrl: `https://picsum.photos/seed/cadence-${i}/300/300`,
         audioUrl: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${(i % 12) + 1}.mp3`,
         isLocal: false,
+        isDemo: true,
       },
     });
     songs.push(song);
@@ -54,6 +55,7 @@ async function main() {
       data: {
         name: def.name,
         coverUrl: songs[def.pick[0]].imageUrl,
+        isDemo: true,
       },
     });
     await prisma.playlistSong.createMany({
@@ -63,14 +65,6 @@ async function main() {
         order,
       })),
     });
-  }
-
-  console.log("seeding likes + history...");
-  for (const idx of [0, 3, 5]) {
-    await prisma.likedSong.create({ data: { songId: songs[idx].id } });
-  }
-  for (const idx of [5, 2, 8, 0]) {
-    await prisma.playHistory.create({ data: { songId: songs[idx].id } });
   }
 
   console.log("seed complete.");

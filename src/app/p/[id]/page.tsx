@@ -8,15 +8,17 @@ import {
   getLikedSongIds,
   getPlaylistWithSongs,
 } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 import { formatDuration } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 async function PlaylistView({ id }: { id: string }) {
+  const userId = await getViewerId();
   const [playlist, likedIds, playlists] = await Promise.all([
-    getPlaylistWithSongs(id),
-    getLikedSongIds(),
-    getAllPlaylists(),
+    getPlaylistWithSongs(id, userId),
+    getLikedSongIds(userId),
+    getAllPlaylists(userId),
   ]);
   if (!playlist) notFound();
 
