@@ -102,7 +102,8 @@ export function UploadButton() {
         <DialogContent className="p-5">
           <DialogTitle>Import from a link</DialogTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Paste a direct link to an audio file (mp3, m4a, and so on).
+            Paste a direct audio link, or a public Google Drive or Dropbox
+            share link.
           </p>
           <div className="mt-3 flex gap-2">
             <Input

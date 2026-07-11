@@ -240,7 +240,26 @@ export async function uploadTracksAction(formData: FormData) {
 
 const MAX_IMPORT_BYTES = 50 * 1024 * 1024; // 50 MB
 
-/** Import a track from a public audio URL into the signed-in user's library. */
+/** Turn a Google Drive / Dropbox share link into a direct-download url. */
+function normalizeCloudUrl(url: URL): URL {
+  const host = url.hostname;
+  if (host.endsWith("dropbox.com")) {
+    url.searchParams.set("dl", "1");
+    return url;
+  }
+  if (host.endsWith("drive.google.com")) {
+    const id = url.pathname.match(/\/file\/d\/([^/]+)/)?.[1] ?? url.searchParams.get("id");
+    if (id) {
+      return new URL(`https://drive.google.com/uc?export=download&id=${id}`);
+    }
+  }
+  return url;
+}
+
+/**
+ * Import a track from a public audio url (including Google Drive / Dropbox
+ * share links) into the signed-in user's library.
+ */
 export async function importFromUrlAction(rawUrl: string) {
   const user = await requireUser();
 
@@ -254,21 +273,15 @@ export async function importFromUrlAction(rawUrl: string) {
     return { ok: false, message: "Only http(s) links are supported" };
   }
 
+  const direct = normalizeCloudUrl(url);
   let res: Response;
   try {
-    res = await fetch(url, { redirect: "follow" });
+    res = await fetch(direct, { redirect: "follow" });
   } catch {
-    return { ok: false, message: "Couldn't reach that URL" };
+    return { ok: false, message: "Couldn't reach that link" };
   }
   if (!res.ok) return { ok: false, message: `Fetch failed (${res.status})` };
 
-  const type = res.headers.get("content-type") ?? "";
-  const looksAudio =
-    type.startsWith("audio/") ||
-    /\.(mp3|m4a|aac|ogg|wav|flac)$/i.test(url.pathname);
-  if (!looksAudio) {
-    return { ok: false, message: "That doesn't look like an audio file" };
-  }
   const declared = Number(res.headers.get("content-length") ?? 0);
   if (declared && declared > MAX_IMPORT_BYTES) {
     return { ok: false, message: "File is too large (50MB max)" };
@@ -279,9 +292,30 @@ export async function importFromUrlAction(rawUrl: string) {
     return { ok: false, message: "File is too large (50MB max)" };
   }
 
-  const filename = decodeURIComponent(
-    url.pathname.split("/").pop() || "track.mp3",
-  );
+  // confirm it is really audio: trust the content type / extension, else sniff
+  // the bytes (cloud links often serve octet-stream with no file extension)
+  const type = res.headers.get("content-type") ?? "";
+  let isAudio =
+    type.startsWith("audio/") ||
+    /\.(mp3|m4a|aac|ogg|wav|flac)$/i.test(url.pathname);
+  if (!isAudio) {
+    try {
+      const meta = await parseBuffer(buf, { mimeType: "audio/mpeg" });
+      isAudio = !!(meta.format.container || (meta.format.duration ?? 0) > 0);
+    } catch {
+      isAudio = false;
+    }
+  }
+  if (!isAudio) {
+    return {
+      ok: false,
+      message: "That doesn't look like an audio file (is the link public?)",
+    };
+  }
+
+  let filename = decodeURIComponent(url.pathname.split("/").pop() || "");
+  if (!/\.[a-z0-9]{2,4}$/i.test(filename)) filename = `${randomUUID()}.mp3`;
+
   const name = await storeAndCreateTrack(buf, filename, user.id);
   revalidateTag(TAGS.songs, "max");
   return { ok: true, message: `Imported ${name}` };
