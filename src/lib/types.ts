@@ -34,6 +34,13 @@ export type PlaylistWithSongs = Playlist & {
 
 export type RepeatMode = "off" | "all" | "one";
 
+export type GroupSummary = {
+  name: string;
+  subtitle: string;
+  count: number;
+  coverUrl: string | null;
+};
+
 export type AuthUser = {
   id: string;
   email: string | null;

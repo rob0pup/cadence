@@ -3,11 +3,12 @@ import { Suspense } from "react";
 import { BrowseGrid } from "@/components/browse-grid";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAlbums } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 async function Albums() {
-  const albums = await getAlbums();
+  const albums = await getAlbums(await getViewerId());
   return <BrowseGrid items={albums} hrefBase="/album" />;
 }
 

@@ -10,14 +10,16 @@ import {
   getLikedSongIds,
   searchSongs,
 } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 async function Tracks({ q }: { q: string }) {
+  const userId = await getViewerId();
   const [songs, likedIds, playlists] = await Promise.all([
-    q ? searchSongs(q) : getAllSongs(),
-    getLikedSongIds(),
-    getAllPlaylists(),
+    q ? searchSongs(q, userId) : getAllSongs(userId),
+    getLikedSongIds(userId),
+    getAllPlaylists(userId),
   ]);
 
   if (!q && songs.length === 0) {

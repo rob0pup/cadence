@@ -6,7 +6,14 @@ import type { AuthUser } from "@/lib/types";
 
 /** The signed-in user from the Auth0 session, or null. No database write. */
 export async function getAuthUser(): Promise<AuthUser | null> {
-  const session = await auth0.getSession();
+  let session;
+  try {
+    session = await auth0.getSession();
+  } catch {
+    // if auth0 is unreachable or unconfigured, treat the visitor as logged-out
+    // (demo mode) rather than crashing the whole app
+    return null;
+  }
   const u = session?.user;
   if (!u?.sub) return null;
   return {
@@ -15,6 +22,11 @@ export async function getAuthUser(): Promise<AuthUser | null> {
     name: u.name ?? null,
     image: u.picture ?? null,
   };
+}
+
+/** The signed-in user's id, or null for logged-out (demo) visitors. */
+export async function getViewerId(): Promise<string | null> {
+  return (await getAuthUser())?.id ?? null;
 }
 
 /** Require a signed-in user and upsert their row. Throws if not signed in. */

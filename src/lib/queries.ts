@@ -2,8 +2,9 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
-import type { PlaylistWithSongs, Song } from "@/lib/types";
+import type { GroupSummary, PlaylistWithSongs, Song } from "@/lib/types";
 
 export const TAGS = {
   songs: "songs",
@@ -12,43 +13,45 @@ export const TAGS = {
   history: "history",
 } as const;
 
+/**
+ * Scope content to the viewer: a signed-in user sees only their own rows,
+ * a logged-out visitor sees the shared demo library.
+ */
+function ownerWhere(userId: string | null) {
+  return userId ? { userId } : { isDemo: true };
+}
+
 export const getAllSongs = unstable_cache(
-  async (): Promise<Song[]> => {
-    return prisma.song.findMany({ orderBy: { name: "asc" } });
+  async (userId: string | null): Promise<Song[]> => {
+    return prisma.song.findMany({
+      where: ownerWhere(userId),
+      orderBy: { name: "asc" },
+    });
   },
   ["all-songs"],
   { tags: [TAGS.songs] },
 );
 
-export const getSongById = unstable_cache(
-  async (id: string): Promise<Song | null> => {
-    return prisma.song.findUnique({ where: { id } });
-  },
-  ["song-by-id"],
-  { tags: [TAGS.songs] },
-);
-
-/**
- * Fuzzy search over name/artist/album using the pg_trgm similarity() function.
- * Falls back gracefully to an empty result if the term is blank.
- */
 export const searchSongs = unstable_cache(
-  async (term: string): Promise<Song[]> => {
+  async (term: string, userId: string | null): Promise<Song[]> => {
     const q = term.trim();
     if (!q) return [];
-    // Columns are camelCase (Prisma maps fields 1:1 unless @map is used), so
-    // they must be double-quoted to preserve case in raw SQL.
+    const owner = userId
+      ? Prisma.sql`"userId" = ${userId}`
+      : Prisma.sql`"isDemo" = true`;
     return prisma.$queryRaw<Song[]>`
       SELECT
         id, name, artist, album, duration, genre, bpm, "key",
-        "imageUrl", "audioUrl", "isLocal", "createdAt", "updatedAt"
+        "imageUrl", "audioUrl", "isLocal", "isDemo", "userId",
+        "createdAt", "updatedAt"
       FROM songs
-      WHERE
+      WHERE (${owner}) AND (
         similarity(name, ${q}) > 0.1
         OR similarity(artist, ${q}) > 0.1
         OR similarity(COALESCE(album, ''), ${q}) > 0.1
         OR name ILIKE ${"%" + q + "%"}
         OR artist ILIKE ${"%" + q + "%"}
+      )
       ORDER BY GREATEST(
         similarity(name, ${q}),
         similarity(artist, ${q}),
@@ -62,17 +65,23 @@ export const searchSongs = unstable_cache(
 );
 
 export const getAllPlaylists = unstable_cache(
-  async () => {
-    return prisma.playlist.findMany({ orderBy: { createdAt: "desc" } });
+  async (userId: string | null) => {
+    return prisma.playlist.findMany({
+      where: ownerWhere(userId),
+      orderBy: { createdAt: "desc" },
+    });
   },
   ["all-playlists"],
   { tags: [TAGS.playlists] },
 );
 
 export const getPlaylistWithSongs = unstable_cache(
-  async (id: string): Promise<PlaylistWithSongs | null> => {
-    const playlist = await prisma.playlist.findUnique({
-      where: { id },
+  async (
+    id: string,
+    userId: string | null,
+  ): Promise<PlaylistWithSongs | null> => {
+    const playlist = await prisma.playlist.findFirst({
+      where: { id, ...ownerWhere(userId) },
       include: {
         playlistSongs: {
           orderBy: { order: "asc" },
@@ -97,16 +106,14 @@ export const getPlaylistWithSongs = unstable_cache(
   { tags: [TAGS.playlists, TAGS.songs] },
 );
 
-export type GroupSummary = {
-  name: string;
-  subtitle: string;
-  count: number;
-  coverUrl: string | null;
-};
+export type { GroupSummary };
 
 export const getAlbums = unstable_cache(
-  async (): Promise<GroupSummary[]> => {
-    const songs = await prisma.song.findMany({ orderBy: { name: "asc" } });
+  async (userId: string | null): Promise<GroupSummary[]> => {
+    const songs = await prisma.song.findMany({
+      where: ownerWhere(userId),
+      orderBy: { name: "asc" },
+    });
     const map = new Map<string, GroupSummary>();
     for (const s of songs) {
       if (!s.album) continue;
@@ -130,8 +137,11 @@ export const getAlbums = unstable_cache(
 );
 
 export const getArtists = unstable_cache(
-  async (): Promise<GroupSummary[]> => {
-    const songs = await prisma.song.findMany({ orderBy: { name: "asc" } });
+  async (userId: string | null): Promise<GroupSummary[]> => {
+    const songs = await prisma.song.findMany({
+      where: ownerWhere(userId),
+      orderBy: { name: "asc" },
+    });
     const map = new Map<string, GroupSummary>();
     for (const s of songs) {
       const e = map.get(s.artist);
@@ -154,24 +164,34 @@ export const getArtists = unstable_cache(
 );
 
 export const getAlbumSongs = unstable_cache(
-  async (album: string): Promise<Song[]> => {
-    return prisma.song.findMany({ where: { album }, orderBy: { name: "asc" } });
+  async (album: string, userId: string | null): Promise<Song[]> => {
+    return prisma.song.findMany({
+      where: { album, ...ownerWhere(userId) },
+      orderBy: { name: "asc" },
+    });
   },
   ["album-songs"],
   { tags: [TAGS.songs] },
 );
 
 export const getArtistSongs = unstable_cache(
-  async (artist: string): Promise<Song[]> => {
-    return prisma.song.findMany({ where: { artist }, orderBy: { name: "asc" } });
+  async (artist: string, userId: string | null): Promise<Song[]> => {
+    return prisma.song.findMany({
+      where: { artist, ...ownerWhere(userId) },
+      orderBy: { name: "asc" },
+    });
   },
   ["artist-songs"],
   { tags: [TAGS.songs] },
 );
 
 export const getLikedSongIds = unstable_cache(
-  async (): Promise<string[]> => {
-    const rows = await prisma.likedSong.findMany({ select: { songId: true } });
+  async (userId: string | null): Promise<string[]> => {
+    if (!userId) return [];
+    const rows = await prisma.likedSong.findMany({
+      where: { userId },
+      select: { songId: true },
+    });
     return rows.map((r) => r.songId);
   },
   ["liked-song-ids"],
@@ -179,8 +199,10 @@ export const getLikedSongIds = unstable_cache(
 );
 
 export const getLikedSongs = unstable_cache(
-  async (): Promise<Song[]> => {
+  async (userId: string | null): Promise<Song[]> => {
+    if (!userId) return [];
     const rows = await prisma.likedSong.findMany({
+      where: { userId },
       orderBy: { likedAt: "desc" },
       include: { song: true },
     });
@@ -191,13 +213,14 @@ export const getLikedSongs = unstable_cache(
 );
 
 export const getRecentlyPlayed = unstable_cache(
-  async (limit = 30): Promise<Song[]> => {
+  async (userId: string | null, limit = 30): Promise<Song[]> => {
+    if (!userId) return [];
     const rows = await prisma.playHistory.findMany({
+      where: { userId },
       orderBy: { playedAt: "desc" },
       take: limit * 3,
       include: { song: true },
     });
-    // de-dupe by song, keep most recent
     const seen = new Set<string>();
     const out: Song[] = [];
     for (const r of rows) {

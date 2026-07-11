@@ -7,14 +7,16 @@ import {
   getLikedSongIds,
   getRecentlyPlayed,
 } from "@/lib/queries";
+import { getViewerId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 async function RecentTracks() {
+  const userId = await getViewerId();
   const [songs, likedIds, playlists] = await Promise.all([
-    getRecentlyPlayed(),
-    getLikedSongIds(),
-    getAllPlaylists(),
+    getRecentlyPlayed(userId),
+    getLikedSongIds(userId),
+    getAllPlaylists(userId),
   ]);
   return (
     <TrackList songs={songs} likedIds={likedIds} playlists={playlists} />
