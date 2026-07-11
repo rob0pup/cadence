@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { uploadTracksAction } from "@/app/actions";
 import { useAuth } from "@/app/hooks/use-auth";
+import { detectBpm } from "@/lib/bpm";
 
 const AUDIO_RE = /\.(mp3|m4a|aac|ogg|wav|flac)$/i;
 
@@ -54,8 +55,10 @@ export function DropImport() {
         `Importing ${files.length} file${files.length === 1 ? "" : "s"}…`,
       );
       try {
+        const bpms = await Promise.all(files.map(detectBpm));
         const fd = new FormData();
         files.forEach((f) => fd.append("files", f));
+        fd.append("bpms", JSON.stringify(bpms));
         const res = await uploadTracksAction(fd);
         toast.success(
           `Imported ${res.count} track${res.count === 1 ? "" : "s"}`,

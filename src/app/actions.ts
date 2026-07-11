@@ -158,6 +158,7 @@ async function storeAndCreateTrack(
   buf: Buffer,
   filename: string,
   userId: string,
+  bpmHint?: number | null,
 ) {
   const hasBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
@@ -187,6 +188,9 @@ async function storeAndCreateTrack(
   } catch {
     // unparseable; keep the filename-derived defaults
   }
+
+  // fall back to a detected bpm when the file's own tags don't carry one
+  if (bpm == null && bpmHint != null) bpm = bpmHint;
 
   let audioUrl: string;
   let imageUrl: string | null = null;
@@ -238,10 +242,21 @@ export async function uploadTracksAction(formData: FormData) {
   const files = formData
     .getAll("files")
     .filter((f): f is File => f instanceof File);
+
+  // optional client-detected bpm hints, one per file in order
+  let bpms: (number | null)[] = [];
+  try {
+    const raw = formData.get("bpms");
+    if (raw) bpms = JSON.parse(String(raw));
+  } catch {
+    bpms = [];
+  }
+
   let count = 0;
-  for (const file of files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     const buf = Buffer.from(await file.arrayBuffer());
-    await storeAndCreateTrack(buf, file.name, user.id);
+    await storeAndCreateTrack(buf, file.name, user.id, bpms[i] ?? null);
     count++;
   }
   revalidateTag(TAGS.songs, "max");
