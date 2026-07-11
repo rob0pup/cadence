@@ -1,6 +1,15 @@
 "use client";
 
-import { Heart, MoreHorizontal, Pause, Play, Shuffle, Trash2 } from "lucide-react";
+import {
+  CornerDownRight,
+  Heart,
+  ListPlus,
+  MoreHorizontal,
+  Pause,
+  Play,
+  Shuffle,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
@@ -75,8 +84,15 @@ export function TrackList({
   reorderable?: boolean;
   playlistId?: string;
 }) {
-  const { currentTrack, isPlaying, playTrack, playAll, togglePlayPause } =
-    usePlayback();
+  const {
+    currentTrack,
+    isPlaying,
+    playTrack,
+    playAll,
+    togglePlayPause,
+    playNext,
+    addToQueue,
+  } = usePlayback();
   const router = useRouter();
   const { ensureSignedIn } = useAuth();
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
@@ -306,6 +322,17 @@ export function TrackList({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => playNext(song)}>
+                        <CornerDownRight />
+                        Play next
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => addToQueue(song)}>
+                        <ListPlus />
+                        Add to queue
+                      </DropdownMenuItem>
+                      {(playlists.length > 0 || playlistId) && (
+                        <DropdownMenuSeparator />
+                      )}
                       {playlists.length > 0 && (
                         <>
                           <DropdownMenuLabel>Add to playlist</DropdownMenuLabel>

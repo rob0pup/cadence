@@ -30,6 +30,9 @@ type PlaybackContextType = {
   toggleQueue: () => void;
   sleepUntil: number | null;
   setSleepTimer: (minutes: number | null) => void;
+  playNext: (song: Song) => void;
+  addToQueue: (song: Song) => void;
+  removeFromQueue: (songId: string) => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -189,6 +192,46 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     },
     [persist],
   );
+
+  const playNext = React.useCallback(
+    (song: Song) => {
+      if (!currentTrack) {
+        playTrack(song, [song]);
+        return;
+      }
+      const insert = (q: Song[]) => {
+        const filtered = q.filter((s) => s.id !== song.id);
+        const idx = filtered.findIndex((s) => s.id === currentTrack.id);
+        filtered.splice(idx + 1, 0, song);
+        return filtered;
+      };
+      setBaseQueue(insert);
+      setQueue(insert);
+    },
+    [currentTrack, playTrack],
+  );
+
+  const addToQueue = React.useCallback(
+    (song: Song) => {
+      if (!currentTrack) {
+        playTrack(song, [song]);
+        return;
+      }
+      const append = (q: Song[]) => [
+        ...q.filter((s) => s.id !== song.id),
+        song,
+      ];
+      setBaseQueue(append);
+      setQueue(append);
+    },
+    [currentTrack, playTrack],
+  );
+
+  const removeFromQueue = React.useCallback((songId: string) => {
+    const remove = (q: Song[]) => q.filter((s) => s.id !== songId);
+    setBaseQueue(remove);
+    setQueue(remove);
+  }, []);
 
   const togglePlayPause = React.useCallback(() => {
     const audio = audioRef.current;
@@ -362,6 +405,9 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     toggleQueue,
     sleepUntil,
     setSleepTimer,
+    playNext,
+    addToQueue,
+    removeFromQueue,
   };
 
   return (
