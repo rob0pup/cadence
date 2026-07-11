@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Blend,
   Heart,
   ListMusic,
   Pause,
@@ -124,6 +125,8 @@ export function PlaybackControls() {
     setSleepTimer,
     radioOn,
     toggleRadio,
+    fade,
+    toggleFade,
   } = usePlayback();
 
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
@@ -323,6 +326,16 @@ export function PlaybackControls() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <HintButton
+          label={fade ? "Fade on" : "Fade between tracks"}
+          variant="ghost"
+          size="icon-sm"
+          aria-pressed={fade}
+          onClick={toggleFade}
+          className={cn(fade && "text-link")}
+        >
+          <Blend className="size-4" />
+        </HintButton>
         <HintButton
           label={radioOn ? "Radio on" : "Radio (autoplay)"}
           variant="ghost"
