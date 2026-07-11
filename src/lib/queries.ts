@@ -220,6 +220,42 @@ export const getLikedSongs = unstable_cache(
   { tags: [TAGS.likes, TAGS.songs] },
 );
 
+/** Songs related to a seed (same artist or genre), for radio autoplay. */
+export const getRelatedSongs = unstable_cache(
+  async (seedId: string, userId: string | null): Promise<Song[]> => {
+    const seed = await prisma.song.findFirst({
+      where: { id: seedId, ...ownerWhere(userId) },
+    });
+    if (!seed) return [];
+
+    const related = await prisma.song.findMany({
+      where: {
+        ...ownerWhere(userId),
+        id: { not: seedId },
+        OR: [
+          { artist: seed.artist },
+          ...(seed.genre ? [{ genre: seed.genre }] : []),
+        ],
+      },
+      take: 20,
+    });
+
+    if (related.length >= 5) return related;
+
+    // not enough matches: top up with anything else in the library
+    const fill = await prisma.song.findMany({
+      where: {
+        ...ownerWhere(userId),
+        id: { notIn: [seedId, ...related.map((s) => s.id)] },
+      },
+      take: 20 - related.length,
+    });
+    return [...related, ...fill];
+  },
+  ["related-songs"],
+  { tags: [TAGS.songs] },
+);
+
 export const getListeningStats = unstable_cache(
   async (userId: string | null): Promise<ListeningStats | null> => {
     if (!userId) return null;
