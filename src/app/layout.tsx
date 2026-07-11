@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 
 import { NowPlaying } from "@/app/now-playing";
+import { DropImport } from "@/app/drop-import";
 import { CommandMenu } from "@/components/command-menu";
 import { PlaybackControls } from "@/app/playback-controls";
 import { PlaybackProvider } from "@/app/playback-context";
@@ -64,6 +65,7 @@ export default async function RootLayout({
             </div>
             <QueuePanel />
             <CommandMenu />
+            <DropImport />
           </PlaybackProvider>
           </AuthProvider>
         </Providers>
