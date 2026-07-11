@@ -1,4 +1,4 @@
-import { Clock, Disc3, Heart, Mic2, Music2 } from "lucide-react";
+import { BarChart3, Clock, Disc3, Heart, Mic2, Music2 } from "lucide-react";
 import Link from "next/link";
 
 import { PlaylistNav } from "@/app/playlist-nav";
@@ -17,6 +17,7 @@ const NAV = [
   { href: "/recent", label: "Recently Played", icon: Clock },
   { href: "/albums", label: "Albums", icon: Disc3 },
   { href: "/artists", label: "Artists", icon: Mic2 },
+  { href: "/stats", label: "Stats", icon: BarChart3 },
 ];
 
 /** The sidebar contents, reused by both the desktop rail and the mobile drawer. */
