@@ -82,9 +82,12 @@ export function TrackList({
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
   const [ordered, setOrdered] = React.useState<Song[]>(songs);
   const dragIndex = React.useRef<number | null>(null);
+  const [selected, setSelected] = React.useState(-1);
+  const tableRef = React.useRef<HTMLTableElement>(null);
 
   React.useEffect(() => setLiked(new Set(likedIds)), [likedIds]);
   React.useEffect(() => setOrdered(songs), [songs]);
+  React.useEffect(() => setSelected(-1), [songs]);
 
   const list = reorderable ? ordered : songs;
 
@@ -125,6 +128,44 @@ export function TrackList({
     void toggleLikeAction(song.id);
   }
 
+  // vim-style keyboard navigation over the list
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.isContentEditable)
+      )
+        return;
+      if (document.querySelector('[role="dialog"]')) return; // a modal is open
+      const n = list.length;
+      if (n === 0) return;
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelected((i) => (i < 0 ? 0 : Math.min(i + 1, n - 1)));
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelected((i) => (i <= 0 ? 0 : i - 1));
+      } else if (e.key === "Enter") {
+        setSelected((i) => {
+          if (i >= 0 && i < n) onPlay(list[i]);
+          return i;
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list]);
+
+  React.useEffect(() => {
+    if (selected < 0) return;
+    const rows = tableRef.current?.querySelectorAll("tbody tr");
+    rows?.[selected]?.scrollIntoView({ block: "nearest" });
+  }, [selected]);
+
   if (list.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-24 text-sm text-muted-foreground">
@@ -145,7 +186,7 @@ export function TrackList({
           Shuffle
         </Button>
       </div>
-      <table className="w-full text-sm">
+      <table ref={tableRef} className="w-full text-sm">
         <thead className="screen-line-bottom sticky top-0 z-10 bg-background/80 backdrop-blur">
         <tr className="text-left text-xs text-muted-foreground">
           <th className="w-10 py-2 pr-2 pl-4 font-medium">#</th>
@@ -171,10 +212,12 @@ export function TrackList({
                 if (reorderable) e.preventDefault();
               }}
               onDrop={() => onDrop(index)}
+              onClick={() => setSelected(index)}
               onDoubleClick={() => onPlay(song)}
               className={cn(
                 "group cursor-default border-b border-line/60 hover:bg-muted/50",
                 isCurrent && "bg-muted/60",
+                selected === index && "bg-muted ring-1 ring-inset ring-ring/60",
                 reorderable && "cursor-grab active:cursor-grabbing",
               )}
             >

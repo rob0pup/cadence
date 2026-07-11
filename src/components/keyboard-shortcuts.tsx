@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const SHORTCUTS: [string, string][] = [
   ["space", "Play / pause"],
+  ["j / k", "Move through tracks"],
+  ["enter", "Play selected track"],
   ["/", "Focus search"],
   ["⌘ / ctrl + k", "Command menu"],
   ["?", "This help"],
