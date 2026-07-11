@@ -35,6 +35,8 @@ type PlaybackContextType = {
   removeFromQueue: (songId: string) => void;
   radioOn: boolean;
   toggleRadio: () => void;
+  fade: boolean;
+  toggleFade: () => void;
 };
 
 const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
@@ -42,6 +44,7 @@ const PlaybackContext = React.createContext<PlaybackContextType | undefined>(
 );
 
 const STORAGE_KEY = "cadence:playback";
+const FADE_MS = 600; // fade in/out duration when fade transitions are on
 
 type PersistedState = {
   volume: number;
@@ -49,6 +52,7 @@ type PersistedState = {
   shuffle: boolean;
   repeat: RepeatMode;
   radioOn: boolean;
+  fade: boolean;
   track: Song | null;
   position: number;
 };
@@ -95,6 +99,30 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
   const [queue, setQueue] = React.useState<Song[]>([]);
   const [radioOn, setRadioOn] = React.useState(false);
   const toggleRadio = React.useCallback(() => setRadioOn((o) => !o), []);
+  const [fade, setFade] = React.useState(false);
+  const toggleFade = React.useCallback(() => setFade((o) => !o), []);
+  const fadingOutRef = React.useRef(false);
+  const fadeIntervalRef = React.useRef<number | null>(null);
+
+  const rampVolume = React.useCallback(
+    (el: HTMLAudioElement, to: number, ms: number, onDone?: () => void) => {
+      if (fadeIntervalRef.current) window.clearInterval(fadeIntervalRef.current);
+      const from = el.volume;
+      const steps = Math.max(1, Math.round(ms / 50));
+      let i = 0;
+      fadeIntervalRef.current = window.setInterval(() => {
+        i += 1;
+        el.volume = Math.max(0, Math.min(1, from + (to - from) * (i / steps)));
+        if (i >= steps) {
+          window.clearInterval(fadeIntervalRef.current!);
+          fadeIntervalRef.current = null;
+          onDone?.();
+        }
+      }, 50);
+    },
+    [],
+  );
+
   const [queueOpen, setQueueOpen] = React.useState(false);
   const toggleQueue = React.useCallback(() => setQueueOpen((o) => !o), []);
   const [sleepUntil, setSleepUntil] = React.useState<number | null>(null);
@@ -125,6 +153,7 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     if (typeof p.shuffle === "boolean") setShuffle(p.shuffle);
     if (p.repeat) setRepeat(p.repeat);
     if (typeof p.radioOn === "boolean") setRadioOn(p.radioOn);
+    if (typeof p.fade === "boolean") setFade(p.fade);
     if (p.track) {
       setCurrentTrack(p.track);
       setBaseQueue([p.track]);
@@ -148,13 +177,14 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
         shuffle,
         repeat,
         radioOn,
+        fade,
         track: currentTrack,
         position: currentTime,
         ...patch,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     },
-    [volume, isMuted, shuffle, repeat, radioOn, currentTrack, currentTime],
+    [volume, isMuted, shuffle, repeat, radioOn, fade, currentTrack, currentTime],
   );
 
   // Apply volume/mute to the element.
@@ -171,13 +201,21 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
       setCurrentTrack(track);
       setCurrentTime(0);
       setIsPlaying(true);
+      fadingOutRef.current = false;
       if (audioRef.current) {
-        audioRef.current.src = getAudioSrc(track.audioUrl);
-        void audioRef.current.play();
+        const el = audioRef.current;
+        el.src = getAudioSrc(track.audioUrl);
+        void el.play();
+        if (fade) {
+          el.volume = 0;
+          rampVolume(el, isMuted ? 0 : volume, FADE_MS);
+        } else {
+          el.volume = isMuted ? 0 : volume;
+        }
       }
       persist({ track, position: 0 });
     },
-    [shuffle, persist],
+    [shuffle, persist, fade, isMuted, volume, rampVolume],
   );
 
   const playAll = React.useCallback(
@@ -344,7 +382,30 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onTime = () => setCurrentTime(audio.currentTime);
+    const onTime = () => {
+      setCurrentTime(audio.currentTime);
+      // fade the outgoing track out over its final moments
+      if (
+        fade &&
+        !fadingOutRef.current &&
+        repeat !== "one" &&
+        currentTrack &&
+        audio.duration > 0 &&
+        audio.duration - audio.currentTime <= FADE_MS / 1000
+      ) {
+        const idx = queue.findIndex((t) => t.id === currentTrack.id);
+        const hasNext =
+          idx < queue.length - 1 || repeat === "all" || radioOn;
+        if (hasNext) {
+          fadingOutRef.current = true;
+          const remaining = Math.max(
+            100,
+            (audio.duration - audio.currentTime) * 1000,
+          );
+          rampVolume(audio, 0, remaining);
+        }
+      }
+    };
     const onDuration = () => setDuration(audio.duration);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
@@ -374,7 +435,16 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [repeat, playNextTrack, queue, currentTrack, radioOn, extendRadio]);
+  }, [
+    repeat,
+    playNextTrack,
+    queue,
+    currentTrack,
+    radioOn,
+    extendRadio,
+    fade,
+    rampVolume,
+  ]);
 
   // Persist the play position periodically so we can resume on reload.
   React.useEffect(() => {
@@ -441,6 +511,8 @@ export function PlaybackProvider({ children }: { children: React.ReactNode }) {
     removeFromQueue,
     radioOn,
     toggleRadio,
+    fade,
+    toggleFade,
   };
 
   return (
