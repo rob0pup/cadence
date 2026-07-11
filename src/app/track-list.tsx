@@ -13,6 +13,7 @@ import {
   reorderPlaylistAction,
   toggleLikeAction,
 } from "@/app/actions";
+import { useAuth } from "@/app/hooks/use-auth";
 import { CoverArt } from "@/components/cover-art";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +78,7 @@ export function TrackList({
   const { currentTrack, isPlaying, playTrack, playAll, togglePlayPause } =
     usePlayback();
   const router = useRouter();
+  const { ensureSignedIn } = useAuth();
   const [liked, setLiked] = React.useState<Set<string>>(new Set(likedIds));
   const [ordered, setOrdered] = React.useState<Song[]>(songs);
   const dragIndex = React.useRef<number | null>(null);
@@ -99,6 +101,7 @@ export function TrackList({
     const from = dragIndex.current;
     dragIndex.current = null;
     if (from === null || from === toIndex) return;
+    if (!ensureSignedIn()) return;
     const next = [...ordered];
     const [moved] = next.splice(from, 1);
     next.splice(toIndex, 0, moved);
@@ -112,6 +115,7 @@ export function TrackList({
   }
 
   function onToggleLike(song: Song) {
+    if (!ensureSignedIn()) return;
     setLiked((prev) => {
       const next = new Set(prev);
       if (next.has(song.id)) next.delete(song.id);
@@ -266,6 +270,7 @@ export function TrackList({
                             <DropdownMenuItem
                               key={p.id}
                               onSelect={async () => {
+                                if (!ensureSignedIn()) return;
                                 const res = await addSongToPlaylistAction(
                                   p.id,
                                   song.id,
@@ -284,6 +289,7 @@ export function TrackList({
                           <DropdownMenuItem
                             className="text-destructive"
                             onSelect={async () => {
+                              if (!ensureSignedIn()) return;
                               await removeSongFromPlaylistAction(
                                 playlistId,
                                 song.id,

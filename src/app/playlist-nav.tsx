@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 
 import { createPlaylistAction, deletePlaylistAction } from "@/app/actions";
+import { useAuth } from "@/app/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import type { Playlist } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 export function PlaylistNav({ playlists }: { playlists: Playlist[] }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { ensureSignedIn } = useAuth();
   const [pending, startTransition] = React.useTransition();
   const [optimistic, setOptimistic] = React.useOptimistic(
     playlists,
@@ -21,6 +23,7 @@ export function PlaylistNav({ playlists }: { playlists: Playlist[] }) {
   );
 
   function onCreate() {
+    if (!ensureSignedIn()) return;
     startTransition(async () => {
       const playlist = await createPlaylistAction();
       router.push(`/p/${playlist.id}`);
@@ -29,6 +32,7 @@ export function PlaylistNav({ playlists }: { playlists: Playlist[] }) {
   }
 
   function onDelete(id: string) {
+    if (!ensureSignedIn()) return;
     startTransition(async () => {
       setOptimistic(id);
       if (pathname === `/p/${id}`) router.push("/");

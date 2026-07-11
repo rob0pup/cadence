@@ -10,19 +10,23 @@ import { revalidateTag } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
 import { TAGS } from "@/lib/queries";
+import { getAuthUser, requireUser } from "@/lib/session";
 
 export async function createPlaylistAction(name = "New Playlist") {
+  await requireUser();
   const playlist = await prisma.playlist.create({ data: { name } });
   revalidateTag(TAGS.playlists, "max");
   return playlist;
 }
 
 export async function renamePlaylistAction(id: string, name: string) {
+  await requireUser();
   await prisma.playlist.update({ where: { id }, data: { name } });
   revalidateTag(TAGS.playlists, "max");
 }
 
 export async function deletePlaylistAction(id: string) {
+  await requireUser();
   // playlist_songs rows cascade on delete via the schema relation
   await prisma.playlist.delete({ where: { id } });
   revalidateTag(TAGS.playlists, "max");
@@ -32,6 +36,7 @@ export async function addSongToPlaylistAction(
   playlistId: string,
   songId: string,
 ) {
+  await requireUser();
   const existing = await prisma.playlistSong.findUnique({
     where: { playlistId_songId: { playlistId, songId } },
   });
@@ -52,6 +57,7 @@ export async function removeSongFromPlaylistAction(
   playlistId: string,
   songId: string,
 ) {
+  await requireUser();
   await prisma.playlistSong.deleteMany({ where: { playlistId, songId } });
   revalidateTag(TAGS.playlists, "max");
 }
@@ -60,6 +66,7 @@ export async function reorderPlaylistAction(
   playlistId: string,
   orderedSongIds: string[],
 ) {
+  await requireUser();
   await prisma.$transaction(
     orderedSongIds.map((songId, order) =>
       prisma.playlistSong.updateMany({
@@ -72,6 +79,7 @@ export async function reorderPlaylistAction(
 }
 
 export async function toggleLikeAction(songId: string) {
+  await requireUser();
   const existing = await prisma.likedSong.findUnique({ where: { songId } });
   if (existing) {
     await prisma.likedSong.delete({ where: { songId } });
@@ -83,6 +91,9 @@ export async function toggleLikeAction(songId: string) {
 }
 
 export async function recordPlayAction(songId: string) {
+  // silent no-op for logged-out demo listeners
+  const user = await getAuthUser();
+  if (!user) return;
   await prisma.playHistory.create({ data: { songId } });
   revalidateTag(TAGS.history, "max");
 }
@@ -98,6 +109,7 @@ export async function updateTrackAction(
     key: string;
   }>,
 ) {
+  await requireUser();
   await prisma.song.update({ where: { id }, data });
   revalidateTag(TAGS.songs, "max");
 }
@@ -108,6 +120,7 @@ export async function updateTrackAction(
  * `tracks/` folder and served through /api/audio (works without any cloud token).
  */
 export async function uploadTracksAction(formData: FormData) {
+  await requireUser();
   const files = formData
     .getAll("files")
     .filter((f): f is File => f instanceof File);

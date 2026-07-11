@@ -15,6 +15,17 @@ datasource db {
   extensions = [pg_trgm(map: "pg_trgm")]
 }
 
+model User {
+  id        String   @id // Auth0 `sub`
+  email     String?
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
 model Song {
   id       String  @id @default(uuid())
   name     String

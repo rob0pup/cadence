@@ -5,6 +5,7 @@ import { PlaylistNav } from "@/app/playlist-nav";
 import { SearchInput } from "@/app/search";
 import { LogoMark } from "@/components/logo-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAllPlaylists } from "@/lib/queries";
 import type { Playlist } from "@/lib/types";
@@ -35,7 +36,10 @@ export async function SidebarInner() {
           <LogoMark className="h-4 w-[1.1rem]" />
           Cadence
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </div>
 
       <div className="px-3 pb-2">
