@@ -71,6 +71,7 @@ model Playlist {
   name     String
   coverUrl String?
   isDemo   Boolean @default(false)
+  isPublic Boolean @default(false)
   userId   String?
 
   createdAt DateTime @default(now())
