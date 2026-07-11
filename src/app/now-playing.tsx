@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { updateTrackAction } from "@/app/actions";
 import { useAuth } from "@/app/hooks/use-auth";
+import { Lyrics } from "@/app/lyrics";
 import { usePlayback } from "@/app/playback-context";
 import { CoverArt } from "@/components/cover-art";
 import { Visualizer } from "@/components/visualizer";
@@ -87,14 +88,35 @@ function Field({
 
 export function NowPlaying() {
   const { currentTrack, patchCurrentTrack, isPlaying } = usePlayback();
+  const [tab, setTab] = React.useState<"info" | "lyrics">("info");
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-l bg-sidebar lg:flex">
-      <div className="px-4 py-3 text-sm font-medium text-muted-foreground">
-        Now Playing
+    <aside className="hidden w-64 shrink-0 flex-col overflow-hidden border-l bg-sidebar lg:flex">
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="text-sm font-medium text-muted-foreground">
+          Now Playing
+        </span>
+        {currentTrack && (
+          <div className="flex items-center gap-1 text-xs">
+            {(["info", "lyrics"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={cn(
+                  "rounded px-1.5 py-0.5 capitalize",
+                  tab === t
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {currentTrack ? (
-        <div className="flex flex-col gap-3 px-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4">
           <CoverArt
             url={currentTrack.imageUrl}
             name={currentTrack.name}
@@ -102,6 +124,10 @@ export function NowPlaying() {
             className="aspect-square w-full rounded-lg text-3xl ring-1 ring-foreground/10 dark:ring-border"
           />
           <Visualizer active={isPlaying} />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {tab === "lyrics" ? (
+              <Lyrics track={currentTrack} />
+            ) : (
           <div className="flex flex-col">
             <Field
               trackId={currentTrack.id}
@@ -147,6 +173,8 @@ export function NowPlaying() {
                 onSaved={patchCurrentTrack}
               />
             </div>
+          </div>
+            )}
           </div>
         </div>
       ) : (
